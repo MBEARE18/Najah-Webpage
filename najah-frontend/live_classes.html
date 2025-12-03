@@ -254,7 +254,7 @@
                     <a href="#about" class="text-gray-700 hover:text-purple-600 font-medium transition">About</a>
                     <a href="#testimonials" class="text-gray-700 hover:text-purple-600 font-medium transition">Testimonials</a>
                     <div class="flex items-center space-x-4">
-                        <a href="#register" class="btn-primary text-white px-6 py-3 rounded-full font-semibold">Register Now</a>
+                    <a href="#register" class="btn-primary text-white px-6 py-3 rounded-full font-semibold">Register Now</a>
                         <a href="login.html" class="px-6 py-3 rounded-full border border-purple-600 text-purple-600 font-semibold hover:bg-purple-50 transition">Login</a>
                     </div>
                 </div>
@@ -1391,15 +1391,15 @@
                 if (!response.ok || !result.success) {
                     throw new Error(result.message || 'Failed to submit enrollment');
                 }
-
+            
                 alert('Thank you for registering! Your enrollment has been received.\n\nSelected Subjects: ' +
-                    selectedSubjects.map(s => s.subject).join(', ') +
-                    '\nTotal Amount: ₹' + data.totalAmount.toLocaleString());
-
-                // Reset form
-                e.target.reset();
-                closeEnrollForm();
-                resetSelections();
+                  selectedSubjects.map(s => s.subject).join(', ') + 
+                  '\nTotal Amount: ₹' + data.totalAmount.toLocaleString());
+            
+            // Reset form
+            e.target.reset();
+            closeEnrollForm();
+            resetSelections();
             } catch (error) {
                 console.error('Error submitting enrollment:', error);
                 alert('Sorry, there was a problem submitting your enrollment. Please try again.');

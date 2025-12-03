@@ -1,5 +1,5 @@
 const User = require('../models/User');
-const { sendResetReminderEmail } = require('../utils/emailService');
+const { sendResetReminderEmail, sendPasswordOtpEmail } = require('../utils/emailService');
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -101,6 +101,96 @@ exports.getMe = async (req, res, next) => {
     success: true,
     data: user
   });
+};
+
+// @desc    Send OTP for password reset
+// @route   POST /api/auth/forgot-otp
+// @access  Public
+exports.sendPasswordOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide an email'
+      });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      return res.status(200).json({
+        success: true,
+        message: 'If this email is registered, an OTP has been sent'
+      });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expire = new Date(Date.now() + 10 * 60 * 1000);
+
+    user.resetOtp = otp;
+    user.resetOtpExpire = expire;
+    await user.save({ validateBeforeSave: false });
+
+    await sendPasswordOtpEmail(user.email, user.name, otp);
+
+    return res.status(200).json({
+      success: true,
+      message: 'OTP sent to your email'
+    });
+  } catch (error) {
+    console.error('Error sending password OTP:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error sending OTP'
+    });
+  }
+};
+
+// @desc    Reset password using OTP
+// @route   POST /api/auth/reset-password
+// @access  Public
+exports.resetPasswordWithOtp = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide email, OTP, and new password'
+      });
+    }
+
+    const user = await User.findOne({
+      email: email.toLowerCase(),
+      resetOtp: otp,
+      resetOtpExpire: { $gt: new Date() }
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired OTP'
+      });
+    }
+
+    user.password = newPassword;
+    user.resetOtp = undefined;
+    user.resetOtpExpire = undefined;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password reset successfully'
+    });
+  } catch (error) {
+    console.error('Error resetting password with OTP:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error resetting password'
+    });
+  }
 };
 
 // Get token from model, create cookie and send response

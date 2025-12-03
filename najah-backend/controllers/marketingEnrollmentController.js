@@ -144,3 +144,33 @@ exports.getMarketingEnrollments = async (req, res) => {
     });
   }
 };
+
+// @desc    Get current student's marketing enrollments (for invoices)
+// @route   GET /api/public/enroll/me
+// @access  Private (student)
+exports.getMyMarketingEnrollments = async (req, res) => {
+  try {
+    if (!req.user || !req.user.email) {
+      return res.status(401).json({
+        success: false,
+        message: 'Not authorized'
+      });
+    }
+
+    const email = req.user.email.toLowerCase();
+
+    const enrollments = await MarketingEnrollment.find({ email }).sort('-createdAt');
+
+    return res.status(200).json({
+      success: true,
+      count: enrollments.length,
+      data: enrollments
+    });
+  } catch (error) {
+    console.error('Error fetching student marketing enrollments:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};

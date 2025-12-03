@@ -64,6 +64,16 @@
                 <p class="text-gray-500">Loading your subjects...</p>
             </div>
         </section>
+
+        <section class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">Latest Invoice</h2>
+                <span id="invoiceDate" class="text-sm text-gray-500"></span>
+            </div>
+            <div id="invoiceContainer">
+                <p class="text-gray-500">Loading your invoice...</p>
+            </div>
+        </section>
     </main>
 
     <script>
@@ -82,6 +92,8 @@
         const subjectsListEl = document.getElementById('subjectsList');
         const subjectsContainer = document.getElementById('subjectsContainer');
         const progressStatEl = document.getElementById('progressStat');
+        const invoiceContainer = document.getElementById('invoiceContainer');
+        const invoiceDateEl = document.getElementById('invoiceDate');
 
         document.getElementById('logoutBtn').addEventListener('click', () => {
             localStorage.removeItem('studentToken');
@@ -145,7 +157,79 @@
             }
         };
 
+        const loadInvoice = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/public/enroll/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Unable to load invoice');
+                }
+
+                const result = await response.json();
+                const enrollments = result.data || [];
+
+                if (!enrollments.length) {
+                    invoiceContainer.innerHTML = '<p class="text-gray-500">No invoices found yet.</p>';
+                    invoiceDateEl.textContent = '';
+                    return;
+                }
+
+                const latest = enrollments[0];
+                const subjects = latest.subjects || [];
+
+                const formattedDate = latest.createdAt
+                    ? new Date(latest.createdAt).toLocaleString()
+                    : '';
+                invoiceDateEl.textContent = formattedDate ? `Date: ${formattedDate}` : '';
+
+                invoiceContainer.innerHTML = `
+                    <div class="border rounded-2xl p-4 bg-gray-50">
+                        <div class="flex justify-between items-center mb-3">
+                            <div>
+                                <p class="text-sm text-gray-500">Student</p>
+                                <p class="font-semibold text-gray-800">${latest.studentName || 'N/A'}</p>
+                                <p class="text-sm text-gray-500">${latest.email || ''}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-gray-500">Class / Board</p>
+                                <p class="font-semibold text-gray-800">Class ${latest.class || '--'} • ${latest.board || '--'}</p>
+                            </div>
+                        </div>
+                        <table class="w-full text-sm mt-2">
+                            <thead>
+                                <tr class="text-left text-gray-500 border-b">
+                                    <th class="py-2">Subject</th>
+                                    <th class="py-2 text-right">Price (₹)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${subjects.map(s => `
+                                    <tr class="border-b last:border-0">
+                                        <td class="py-2">${s.subject}</td>
+                                        <td class="py-2 text-right">${(s.price || 0).toLocaleString()}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        <div class="flex justify-between items-center mt-4 pt-3 border-t">
+                            <span class="font-semibold text-gray-700">Total</span>
+                            <span class="text-xl font-bold text-purple-700">₹${(latest.totalAmount || 0).toLocaleString()}</span>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Invoice load error:', error);
+                invoiceContainer.innerHTML = '<p class="text-red-500">Unable to load invoice at the moment.</p>';
+                invoiceDateEl.textContent = '';
+            }
+        };
+
         loadDashboard();
+        loadInvoice();
     </script>
 </body>
 </html>

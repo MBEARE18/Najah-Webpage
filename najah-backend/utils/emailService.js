@@ -62,7 +62,7 @@ exports.sendWelcomeEmail = async (email, name, password) => {
               <p>You can now login to your account using the credentials above.</p>
               
               <div style="text-align: center;">
-                <a href="${process.env.FRONTEND_URL || 'http://localhost:5000'}/login.html" class="button">Login Now</a>
+                <a href="file:///C:/Users/DELL/OneDrive/Desktop/najah/najah-frontend/login.html" class="button">Login Now</a>
               </div>
 
               <p>If you have any questions, please don't hesitate to contact us.</p>
@@ -134,7 +134,7 @@ exports.sendResetReminderEmail = async (email, name) => {
               <p>After 7 days, your current password may no longer be considered secure, and you could be asked to reset it again.</p>
 
               <div style="text-align: center;">
-                <a href="${process.env.FRONTEND_URL || 'http://localhost:5000'}/login.html" class="button">Go to Login</a>
+                <a href="file:///C:/Users/DELL/OneDrive/Desktop/najah/najah-frontend/login.html" class="button">Go to Login</a>
               </div>
 
               <p>Steps:</p>
@@ -162,6 +162,60 @@ exports.sendResetReminderEmail = async (email, name) => {
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error('Error sending reset reminder email:', error);
+    throw error;
+  }
+};
+
+// Send OTP for password reset
+exports.sendPasswordOtpEmail = async (email, name, otp) => {
+  try {
+    const transporter = createTransporter();
+
+    const mailOptions = {
+      from: `"Najah Tutors" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: 'Najah Tutors - Password Reset OTP',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9f9f9; padding: 24px; border-radius: 0 0 10px 10px; }
+            .otp-box { background: #f0f0f0; padding: 15px; border-radius: 5px; font-size: 24px; font-weight: bold; text-align: center; letter-spacing: 4px; color: #333; margin: 10px 0; }
+            .footer { text-align: center; margin-top: 24px; color: #666; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Password Reset OTP</h1>
+            </div>
+            <div class="content">
+              <h2>Hello ${name},</h2>
+              <p>You requested to reset your Najah Tutors account password.</p>
+              <p>Please use the following One Time Password (OTP) to reset your password:</p>
+              <div class="otp-box">${otp}</div>
+              <p>This OTP is valid for the next <strong>10 minutes</strong>. Do not share this code with anyone.</p>
+              <p>If you did not request a password reset, you can safely ignore this email.</p>
+              <p>Best regards,<br><strong>Najah Tutors Team</strong></p>
+            </div>
+            <div class="footer">
+              <p>This is an automated message. Please do not reply to this email.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Password reset OTP email sent:', info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Error sending password reset OTP email:', error);
     throw error;
   }
 };

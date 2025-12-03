@@ -50,6 +50,12 @@ const userSchema = new mongoose.Schema({
   hasSeenResetReminder: {
     type: Boolean,
     default: false
+  },
+  resetOtp: {
+    type: String
+  },
+  resetOtpExpire: {
+    type: Date
   }
 }, {
   timestamps: true
