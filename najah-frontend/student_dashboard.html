@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Najah Tutors</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            min-height: 100vh;
+            background: #f5f7fb;
+            font-family: 'Poppins', sans-serif;
+        }
+        .gradient-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <header class="gradient-card p-6 shadow-lg">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold">Welcome back, <span id="studentName">Student</span> 👋</h1>
+                <p class="text-indigo-100 mt-2">Here's a quick overview of your learning journey.</p>
+            </div>
+            <button id="logoutBtn" class="mt-4 md:mt-0 bg-white text-purple-700 px-6 py-2 rounded-full font-semibold hover:bg-purple-50 transition">
+                Logout
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto p-6 space-y-8">
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="card p-6">
+                <h3 class="text-gray-500 font-semibold">Upcoming Class</h3>
+                <p class="text-3xl font-bold mt-4" id="nextClass">Loading...</p>
+                <p class="text-gray-500 mt-2">Stay ready and join on time!</p>
+            </div>
+            <div class="card p-6">
+                <h3 class="text-gray-500 font-semibold">Subjects Enrolled</h3>
+                <p class="text-3xl font-bold mt-4" id="subjectsCount">--</p>
+                <p class="text-gray-500 mt-2" id="subjectsList">Fetching your subjects...</p>
+            </div>
+            <div class="card p-6">
+                <h3 class="text-gray-500 font-semibold">Progress</h3>
+                <p class="text-3xl font-bold mt-4" id="progressStat">--%</p>
+                <p class="text-gray-500 mt-2">Keep pushing towards excellence!</p>
+            </div>
+        </section>
+
+        <section class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">My Subjects</h2>
+                <a href="live_classes.html#courses" class="text-purple-600 font-semibold hover:underline">Browse more</a>
+            </div>
+            <div id="subjectsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <p class="text-gray-500">Loading your subjects...</p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const API_BASE_URL = window.location.protocol.startsWith('http')
+            ? `${window.location.protocol}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ''}/api`
+            : 'http://localhost:5000/api';
+
+        const token = localStorage.getItem('studentToken') || sessionStorage.getItem('studentToken');
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        const studentNameEl = document.getElementById('studentName');
+        const nextClassEl = document.getElementById('nextClass');
+        const subjectsCountEl = document.getElementById('subjectsCount');
+        const subjectsListEl = document.getElementById('subjectsList');
+        const subjectsContainer = document.getElementById('subjectsContainer');
+        const progressStatEl = document.getElementById('progressStat');
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('studentToken');
+            localStorage.removeItem('studentName');
+            sessionStorage.removeItem('studentToken');
+            window.location.href = 'login.html';
+        });
+
+        const populateSubjects = (subjects = []) => {
+            if (!subjects.length) {
+                subjectsContainer.innerHTML = '<p class="text-gray-500">No subjects found yet. Please contact support if this is unexpected.</p>';
+                subjectsCountEl.textContent = '0';
+                subjectsListEl.textContent = 'No subjects available';
+                return;
+            }
+
+            subjectsCountEl.textContent = subjects.length;
+            subjectsListEl.textContent = subjects.map(s => s.subject || s).join(', ');
+            subjectsContainer.innerHTML = subjects.map(subject => `
+                <div class="p-5 border rounded-2xl hover:border-purple-500 transition">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-800">${subject.subject || subject}</h3>
+                            <p class="text-gray-500 text-sm mt-1">Class ${subject.class || '--'} • ${subject.board || '--'}</p>
+                        </div>
+                        <span class="text-purple-600 text-xl">
+                            <i class="fas fa-book"></i>
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        const loadDashboard = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error('Session expired. Please log in again.');
+                }
+
+                const { data: user } = await response.json();
+                studentNameEl.textContent = user.name;
+                progressStatEl.textContent = user.progress || '72%';
+
+                nextClassEl.textContent = user.nextClass || 'Physics - 4:00 PM Today';
+
+                if (user.subjects && user.subjects.length) {
+                    populateSubjects(user.subjects);
+                } else {
+                    populateSubjects([]);
+                }
+            } catch (error) {
+                alert(error.message || 'Unable to load dashboard. Redirecting to login.');
+                localStorage.removeItem('studentToken');
+                sessionStorage.removeItem('studentToken');
+                window.location.href = 'login.html';
+            }
+        };
+
+        loadDashboard();
+    </script>
+</body>
+</html>

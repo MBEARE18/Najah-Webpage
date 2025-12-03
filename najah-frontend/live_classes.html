@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Online Classes - Najah Tutors</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .animate-fadeInUp {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        .animate-fadeInDown {
+            animation: fadeInDown 0.8s ease-out forwards;
+        }
+
+        .animate-slideInLeft {
+            animation: slideInLeft 0.8s ease-out forwards;
+        }
+
+        .animate-slideInRight {
+            animation: slideInRight 0.8s ease-out forwards;
+        }
+
+        .animate-scaleIn {
+            animation: scaleIn 0.6s ease-out forwards;
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #4facfe);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .course-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .course-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .course-card:hover::before {
+            left: 100%;
+        }
+
+        .feature-icon {
+            transition: all 0.3s ease;
+        }
+
+        .feature-icon:hover {
+            transform: rotate(360deg) scale(1.2);
+        }
+
+        /* Scroll animations */
+        .scroll-animate {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .scroll-animate.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+
+        .stats-counter {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .testimonial-card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .board-tab {
+            color: #6b7280;
+        }
+
+        .board-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .board-content {
+            display: block;
+        }
+
+        .board-content.hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50 animate-fadeInDown">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center">
+                    <img src="https://najahtutors.net/logo.png" alt="Najah Tutors" class="h-16 w-auto">
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#home" class="text-gray-700 hover:text-purple-600 font-medium transition">Home</a>
+                    <a href="#courses" class="text-gray-700 hover:text-purple-600 font-medium transition">Courses</a>
+                    <a href="#features" class="text-gray-700 hover:text-purple-600 font-medium transition">Features</a>
+                    <a href="#about" class="text-gray-700 hover:text-purple-600 font-medium transition">About</a>
+                    <a href="#testimonials" class="text-gray-700 hover:text-purple-600 font-medium transition">Testimonials</a>
+                    <div class="flex items-center space-x-4">
+                        <a href="#register" class="btn-primary text-white px-6 py-3 rounded-full font-semibold">Register Now</a>
+                        <a href="login.html" class="px-6 py-3 rounded-full border border-purple-600 text-purple-600 font-semibold hover:bg-purple-50 transition">Login</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="text-gray-700 focus:outline-none">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+            <div class="px-4 py-4 space-y-3">
+                <a href="#home" class="block text-gray-700 hover:text-purple-600 font-medium">Home</a>
+                <a href="#courses" class="block text-gray-700 hover:text-purple-600 font-medium">Courses</a>
+                <a href="#features" class="block text-gray-700 hover:text-purple-600 font-medium">Features</a>
+                <a href="#about" class="block text-gray-700 hover:text-purple-600 font-medium">About</a>
+                <a href="#testimonials" class="block text-gray-700 hover:text-purple-600 font-medium">Testimonials</a>
+                <a href="#register" class="block btn-primary text-white px-6 py-3 rounded-full font-semibold text-center">Register Now</a>
+                <a href="login.html" class="block px-6 py-3 rounded-full border border-purple-600 text-purple-600 font-semibold text-center hover:bg-purple-50 transition">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="relative py-20 md:py-32 overflow-hidden">
+        <!-- Background Image with Overlay -->
+        <div class="absolute inset-0 z-0">
+            <img src="najah.png" alt="Education Background" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-r from-purple-900/95 via-purple-800/90 to-blue-900/95"></div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-white">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="animate-slideInLeft">
+                    <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight drop-shadow-lg">
+                        LIVE Online Classes Registration Open
+                    </h1>
+                    <p class="text-xl md:text-2xl mb-8 text-gray-100 drop-shadow">
+                        Join India's Best Live Interactive Classes
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="#register" class="bg-white text-purple-600 px-8 py-4 rounded-full font-bold text-lg hover:shadow-2xl transition transform hover:-translate-y-1">
+                            Enroll Now <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                        <a href="#courses" class="border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-purple-600 transition">
+                            View Courses
+                        </a>
+                    </div>
+                    <div class="mt-10 grid grid-cols-3 gap-6">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold drop-shadow">10K+</div>
+                            <div class="text-sm text-gray-200">Students</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold drop-shadow">50+</div>
+                            <div class="text-sm text-gray-200">Expert Teachers</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold drop-shadow">98%</div>
+                            <div class="text-sm text-gray-200">Success Rate</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="animate-slideInRight">
+                    <img src="najah.png" alt="Online Learning" class="rounded-2xl shadow-2xl transform hover:scale-105 transition duration-500">
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 scroll-animate">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Why Choose Najah Tutors?</h2>
+                <p class="text-xl text-gray-600">Experience the best online learning platform</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-5 gap-8">
+                <div class="text-center p-8 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl card-hover scroll-animate">
+                    <div class="bg-gradient-to-br from-purple-500 to-pink-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 feature-icon">
+                        <i class="fas fa-video text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Live Interactive Classes</h3>
+                    <p class="text-gray-600">Real-time interaction with expert teachers</p>
+                </div>
+                <div class="text-center p-8 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl card-hover scroll-animate" style="animation-delay: 0.1s;">
+                    <div class="bg-gradient-to-br from-blue-500 to-cyan-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 feature-icon">
+                        <i class="fas fa-chalkboard-teacher text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Expert Faculty</h3>
+                    <p class="text-gray-600">Learn from India's top educators</p>
+                </div>
+                <div class="text-center p-8 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl card-hover scroll-animate" style="animation-delay: 0.2s;">
+                    <div class="bg-gradient-to-br from-green-500 to-emerald-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 feature-icon">
+                        <i class="fas fa-book-open text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Study Material</h3>
+                    <p class="text-gray-600">Comprehensive notes and resources</p>
+                </div>
+                <div class="text-center p-8 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl card-hover scroll-animate" style="animation-delay: 0.3s;">
+                    <div class="bg-gradient-to-br from-yellow-500 to-orange-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 feature-icon">
+                        <i class="fas fa-question-circle text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Instant Doubt Clearing</h3>
+                    <p class="text-gray-600">Get your doubts solved immediately</p>
+                </div>
+                <div class="text-center p-8 bg-gradient-to-br from-red-50 to-pink-50 rounded-2xl card-hover scroll-animate" style="animation-delay: 0.4s;">
+                    <div class="bg-gradient-to-br from-red-500 to-pink-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 feature-icon">
+                        <i class="fas fa-trophy text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Proven Results</h3>
+                    <p class="text-gray-600">98% success rate in exams</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 scroll-animate">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                    About Najah Tutors
+                </h2>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                    Najah Tutors is dedicated to delivering high-quality LIVE interactive classes,
+                    helping students build strong concepts, improve scores, and learn with confidence.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center p-8 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl card-hover scroll-animate">
+                    <div class="bg-gradient-to-br from-purple-500 to-pink-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 feature-icon">
+                        <i class="fas fa-bullseye text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Our Mission</h3>
+                    <p class="text-gray-600">
+                        To make quality education accessible to every student through structured,
+                        engaging and exam-focused online learning.
+                    </p>
+                </div>
+
+                <div class="text-center p-8 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl card-hover scroll-animate" style="animation-delay: 0.1s;">
+                    <div class="bg-gradient-to-br from-blue-500 to-cyan-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 feature-icon">
+                        <i class="fas fa-chalkboard-teacher text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Expert Faculty</h3>
+                    <p class="text-gray-600">
+                        Learn from experienced, passionate teachers who simplify complex topics and
+                        keep sessions interactive.
+                    </p>
+                </div>
+
+                <div class="text-center p-8 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl card-hover scroll-animate" style="animation-delay: 0.2s;">
+                    <div class="bg-gradient-to-br from-green-500 to-emerald-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 feature-icon">
+                        <i class="fas fa-smile-beam text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Student Success</h3>
+                    <p class="text-gray-600">
+                        With regular tests, doubt clearing, and personalized feedback, we ensure
+                        students stay on track and achieve results.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Courses Section -->
+    <section id="courses" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 scroll-animate">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Available Courses</h2>
+                <p class="text-xl text-gray-600">Choose your board and explore our courses</p>
+            </div>
+
+            <!-- Board Tabs -->
+            <div class="flex justify-center mb-12">
+                <div class="inline-flex bg-white rounded-full shadow-lg p-2">
+                    <button onclick="switchBoard('cbse')" id="cbse-tab" class="board-tab active px-8 py-3 rounded-full font-bold text-lg transition-all duration-300">
+                        CBSE
+                    </button>
+                    <button onclick="switchBoard('icse')" id="icse-tab" class="board-tab px-8 py-3 rounded-full font-bold text-lg transition-all duration-300">
+                        ICSE
+                    </button>
+                </div>
+            </div>
+
+            <!-- CBSE Content -->
+            <div id="cbse-content" class="board-content">
+                <!-- Class 9th CBSE -->
+                <div class="mb-16">
+                    <h3 class="text-3xl font-bold text-gray-900 mb-8 text-center scroll-animate">Class 9th - CBSE</h3>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <!-- Physics Card -->
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover scroll-animate">
+                            <div class="h-48 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                                <img src="https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=400" alt="Physics Course" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">Physics</h4>
+                                <div class="space-y-2 mb-4">
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-alt mr-2 text-blue-600"></i><span class="font-semibold">Duration:</span> 180 Days</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-week mr-2 text-blue-600"></i><span class="font-semibold">Days:</span> Mon, Wed, Fri</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-clock mr-2 text-blue-600"></i><span class="font-semibold">Time:</span> 4:00 PM - 5:30 PM</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-check mr-2 text-blue-600"></i><span class="font-semibold">Starting:</span> 1st January 2026</p>
+                                </div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <span class="text-2xl font-bold text-blue-600">₹4,999</span>
+                                        <span class="text-gray-500 line-through ml-2 text-sm">₹7,999</span>
+                                    </div>
+                                    <input type="checkbox" class="subject-select w-6 h-6 text-blue-600 rounded border-gray-300 focus:ring-blue-500" data-subject="Physics" data-class="9" data-board="CBSE" data-price="4999">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chemistry Card -->
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover scroll-animate" style="animation-delay: 0.1s;">
+                            <div class="h-48 bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center">
+                                <img src="https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?w=400" alt="Chemistry Course" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">Chemistry</h4>
+                                <div class="space-y-2 mb-4">
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-alt mr-2 text-purple-600"></i><span class="font-semibold">Duration:</span> 180 Days</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-week mr-2 text-purple-600"></i><span class="font-semibold">Days:</span> Tue, Thu, Sat</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-clock mr-2 text-purple-600"></i><span class="font-semibold">Time:</span> 5:30 PM - 7:00 PM</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-check mr-2 text-purple-600"></i><span class="font-semibold">Starting:</span> 1st January 2026</p>
+                                </div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <span class="text-2xl font-bold text-purple-600">₹4,999</span>
+                                        <span class="text-gray-500 line-through ml-2 text-sm">₹7,999</span>
+                                    </div>
+                                    <input type="checkbox" class="subject-select w-6 h-6 text-purple-600 rounded border-gray-300 focus:ring-purple-500" data-subject="Chemistry" data-class="9" data-board="CBSE" data-price="4999">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Biology Card -->
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover scroll-animate" style="animation-delay: 0.2s;">
+                            <div class="h-48 bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
+                                <img src="https://images.unsplash.com/photo-1576086213369-97a306d36557?w=400" alt="Biology Course" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">Biology</h4>
+                                <div class="space-y-2 mb-4">
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-alt mr-2 text-green-600"></i><span class="font-semibold">Duration:</span> 180 Days</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-week mr-2 text-green-600"></i><span class="font-semibold">Days:</span> Mon, Wed, Fri</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-clock mr-2 text-green-600"></i><span class="font-semibold">Time:</span> 7:00 PM - 8:30 PM</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-check mr-2 text-green-600"></i><span class="font-semibold">Starting:</span> 1st January 2026</p>
+                                </div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <span class="text-2xl font-bold text-green-600">₹4,999</span>
+                                        <span class="text-gray-500 line-through ml-2 text-sm">₹7,999</span>
+                                    </div>
+                                    <input type="checkbox" class="subject-select w-6 h-6 text-green-600 rounded border-gray-300 focus:ring-green-500" data-subject="Biology" data-class="9" data-board="CBSE" data-price="4999">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Math Card -->
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover scroll-animate" style="animation-delay: 0.3s;">
+                            <div class="h-48 bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
+                                <img src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400" alt="Math Course" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">Mathematics</h4>
+                                <div class="space-y-2 mb-4">
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-alt mr-2 text-orange-600"></i><span class="font-semibold">Duration:</span> 180 Days</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-week mr-2 text-orange-600"></i><span class="font-semibold">Days:</span> Tue, Thu, Sat</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-clock mr-2 text-orange-600"></i><span class="font-semibold">Time:</span> 4:00 PM - 5:30 PM</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-check mr-2 text-orange-600"></i><span class="font-semibold">Starting:</span> 1st January 2026</p>
+                                </div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <span class="text-2xl font-bold text-orange-600">₹4,999</span>
+                                        <span class="text-gray-500 line-through ml-2 text-sm">₹7,999</span>
+                                    </div>
+                                    <input type="checkbox" class="subject-select w-6 h-6 text-orange-600 rounded border-gray-300 focus:ring-orange-500" data-subject="Mathematics" data-class="9" data-board="CBSE" data-price="4999">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-8">
+                        <button onclick="openEnrollForm()" class="btn-primary text-white px-12 py-4 rounded-full font-bold text-lg">
+                            Enroll Now <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Class 10th CBSE -->
+                <div class="mb-16">
+                    <h3 class="text-3xl font-bold text-gray-900 mb-8 text-center scroll-animate">Class 10th - CBSE</h3>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <!-- Physics Card -->
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover scroll-animate">
+                            <div class="h-48 bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center">
+                                <img src="https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=400" alt="Physics Course" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">Physics</h4>
+                                <div class="space-y-2 mb-4">
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-alt mr-2 text-blue-600"></i><span class="font-semibold">Duration:</span> 200 Days</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-week mr-2 text-blue-600"></i><span class="font-semibold">Days:</span> Mon, Wed, Fri</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-clock mr-2 text-blue-600"></i><span class="font-semibold">Time:</span> 6:00 PM - 7:30 PM</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-check mr-2 text-blue-600"></i><span class="font-semibold">Starting:</span> 1st January 2026</p>
+                                </div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <span class="text-2xl font-bold text-blue-600">₹5,999</span>
+                                        <span class="text-gray-500 line-through ml-2 text-sm">₹8,999</span>
+                                    </div>
+                                    <input type="checkbox" class="subject-select w-6 h-6 text-blue-600 rounded border-gray-300 focus:ring-blue-500" data-subject="Physics" data-class="10" data-board="CBSE" data-price="5999">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chemistry Card -->
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover scroll-animate" style="animation-delay: 0.1s;">
+                            <div class="h-48 bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center">
+                                <img src="https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?w=400" alt="Chemistry Course" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">Chemistry</h4>
+                                <div class="space-y-2 mb-4">
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-alt mr-2 text-purple-600"></i><span class="font-semibold">Duration:</span> 200 Days</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-week mr-2 text-purple-600"></i><span class="font-semibold">Days:</span> Tue, Thu, Sat</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-clock mr-2 text-purple-600"></i><span class="font-semibold">Time:</span> 6:00 PM - 7:30 PM</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-check mr-2 text-purple-600"></i><span class="font-semibold">Starting:</span> 1st January 2026</p>
+                                </div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <span class="text-2xl font-bold text-purple-600">₹5,999</span>
+                                        <span class="text-gray-500 line-through ml-2 text-sm">₹8,999</span>
+                                    </div>
+                                    <input type="checkbox" class="subject-select w-6 h-6 text-purple-600 rounded border-gray-300 focus:ring-purple-500" data-subject="Chemistry" data-class="10" data-board="CBSE" data-price="5999">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Biology Card -->
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover scroll-animate" style="animation-delay: 0.2s;">
+                            <div class="h-48 bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center">
+                                <img src="https://images.unsplash.com/photo-1576086213369-97a306d36557?w=400" alt="Biology Course" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">Biology</h4>
+                                <div class="space-y-2 mb-4">
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-alt mr-2 text-green-600"></i><span class="font-semibold">Duration:</span> 200 Days</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-week mr-2 text-green-600"></i><span class="font-semibold">Days:</span> Mon, Wed, Fri</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-clock mr-2 text-green-600"></i><span class="font-semibold">Time:</span> 7:30 PM - 9:00 PM</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-check mr-2 text-green-600"></i><span class="font-semibold">Starting:</span> 1st January 2026</p>
+                                </div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <span class="text-2xl font-bold text-green-600">₹5,999</span>
+                                        <span class="text-gray-500 line-through ml-2 text-sm">₹8,999</span>
+                                    </div>
+                                    <input type="checkbox" class="subject-select w-6 h-6 text-green-600 rounded border-gray-300 focus:ring-green-500" data-subject="Biology" data-class="10" data-board="CBSE" data-price="5999">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Math Card -->
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover scroll-animate" style="animation-delay: 0.3s;">
+                            <div class="h-48 bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center">
+                                <img src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400" alt="Math Course" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">Mathematics</h4>
+                                <div class="space-y-2 mb-4">
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-alt mr-2 text-orange-600"></i><span class="font-semibold">Duration:</span> 200 Days</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-week mr-2 text-orange-600"></i><span class="font-semibold">Days:</span> Tue, Thu, Sat</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-clock mr-2 text-orange-600"></i><span class="font-semibold">Time:</span> 5:00 PM - 6:30 PM</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-check mr-2 text-orange-600"></i><span class="font-semibold">Starting:</span> 1st January 2026</p>
+                                </div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <span class="text-2xl font-bold text-orange-600">₹5,999</span>
+                                        <span class="text-gray-500 line-through ml-2 text-sm">₹8,999</span>
+                                    </div>
+                                    <input type="checkbox" class="subject-select w-6 h-6 text-orange-600 rounded border-gray-300 focus:ring-orange-500" data-subject="Mathematics" data-class="10" data-board="CBSE" data-price="5999">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-8">
+                        <button onclick="openEnrollForm()" class="btn-primary text-white px-12 py-4 rounded-full font-bold text-lg">
+                            Enroll Now <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ICSE Content -->
+            <div id="icse-content" class="board-content hidden">
+                <!-- Class 9th ICSE -->
+                <div class="mb-16">
+                    <h3 class="text-3xl font-bold text-gray-900 mb-8 text-center scroll-animate">Class 9th - ICSE</h3>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <!-- Physics Card -->
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover scroll-animate">
+                            <div class="h-48 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                                <img src="https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=400" alt="Physics Course" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">Physics</h4>
+                                <div class="space-y-2 mb-4">
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-alt mr-2 text-blue-600"></i><span class="font-semibold">Duration:</span> 180 Days</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-week mr-2 text-blue-600"></i><span class="font-semibold">Days:</span> Mon, Wed, Fri</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-clock mr-2 text-blue-600"></i><span class="font-semibold">Time:</span> 3:00 PM - 4:30 PM</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-check mr-2 text-blue-600"></i><span class="font-semibold">Starting:</span> 1st January 2026</p>
+                                </div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <span class="text-2xl font-bold text-blue-600">₹5,499</span>
+                                        <span class="text-gray-500 line-through ml-2 text-sm">₹8,499</span>
+                                    </div>
+                                    <input type="checkbox" class="subject-select w-6 h-6 text-blue-600 rounded border-gray-300 focus:ring-blue-500" data-subject="Physics" data-class="9" data-board="ICSE" data-price="5499">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chemistry Card -->
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover scroll-animate" style="animation-delay: 0.1s;">
+                            <div class="h-48 bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center">
+                                <img src="https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?w=400" alt="Chemistry Course" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">Chemistry</h4>
+                                <div class="space-y-2 mb-4">
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-alt mr-2 text-purple-600"></i><span class="font-semibold">Duration:</span> 180 Days</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-week mr-2 text-purple-600"></i><span class="font-semibold">Days:</span> Tue, Thu, Sat</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-clock mr-2 text-purple-600"></i><span class="font-semibold">Time:</span> 4:30 PM - 6:00 PM</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-check mr-2 text-purple-600"></i><span class="font-semibold">Starting:</span> 1st January 2026</p>
+                                </div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <span class="text-2xl font-bold text-purple-600">₹5,499</span>
+                                        <span class="text-gray-500 line-through ml-2 text-sm">₹8,499</span>
+                                    </div>
+                                    <input type="checkbox" class="subject-select w-6 h-6 text-purple-600 rounded border-gray-300 focus:ring-purple-500" data-subject="Chemistry" data-class="9" data-board="ICSE" data-price="5499">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Biology Card -->
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover scroll-animate" style="animation-delay: 0.2s;">
+                            <div class="h-48 bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
+                                <img src="https://images.unsplash.com/photo-1576086213369-97a306d36557?w=400" alt="Biology Course" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">Biology</h4>
+                                <div class="space-y-2 mb-4">
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-alt mr-2 text-green-600"></i><span class="font-semibold">Duration:</span> 180 Days</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-week mr-2 text-green-600"></i><span class="font-semibold">Days:</span> Mon, Wed, Fri</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-clock mr-2 text-green-600"></i><span class="font-semibold">Time:</span> 6:00 PM - 7:30 PM</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-check mr-2 text-green-600"></i><span class="font-semibold">Starting:</span> 1st January 2026</p>
+                                </div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <span class="text-2xl font-bold text-green-600">₹5,499</span>
+                                        <span class="text-gray-500 line-through ml-2 text-sm">₹8,499</span>
+                                    </div>
+                                    <input type="checkbox" class="subject-select w-6 h-6 text-green-600 rounded border-gray-300 focus:ring-green-500" data-subject="Biology" data-class="9" data-board="ICSE" data-price="5499">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Math Card -->
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover scroll-animate" style="animation-delay: 0.3s;">
+                            <div class="h-48 bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
+                                <img src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400" alt="Math Course" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">Mathematics</h4>
+                                <div class="space-y-2 mb-4">
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-alt mr-2 text-orange-600"></i><span class="font-semibold">Duration:</span> 180 Days</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-week mr-2 text-orange-600"></i><span class="font-semibold">Days:</span> Tue, Thu, Sat</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-clock mr-2 text-orange-600"></i><span class="font-semibold">Time:</span> 3:00 PM - 4:30 PM</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-check mr-2 text-orange-600"></i><span class="font-semibold">Starting:</span> 1st January 2026</p>
+                                </div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <span class="text-2xl font-bold text-orange-600">₹5,499</span>
+                                        <span class="text-gray-500 line-through ml-2 text-sm">₹8,499</span>
+                                    </div>
+                                    <input type="checkbox" class="subject-select w-6 h-6 text-orange-600 rounded border-gray-300 focus:ring-orange-500" data-subject="Mathematics" data-class="9" data-board="ICSE" data-price="5499">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-8">
+                        <button onclick="openEnrollForm()" class="btn-primary text-white px-12 py-4 rounded-full font-bold text-lg">
+                            Enroll Now <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Class 10th ICSE -->
+                <div class="mb-16">
+                    <h3 class="text-3xl font-bold text-gray-900 mb-8 text-center scroll-animate">Class 10th - ICSE</h3>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <!-- Physics Card -->
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover scroll-animate">
+                            <div class="h-48 bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center">
+                                <img src="https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=400" alt="Physics Course" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">Physics</h4>
+                                <div class="space-y-2 mb-4">
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-alt mr-2 text-blue-600"></i><span class="font-semibold">Duration:</span> 200 Days</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-week mr-2 text-blue-600"></i><span class="font-semibold">Days:</span> Mon, Wed, Fri</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-clock mr-2 text-blue-600"></i><span class="font-semibold">Time:</span> 5:00 PM - 6:30 PM</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-check mr-2 text-blue-600"></i><span class="font-semibold">Starting:</span> 1st January 2026</p>
+                                </div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <span class="text-2xl font-bold text-blue-600">₹6,499</span>
+                                        <span class="text-gray-500 line-through ml-2 text-sm">₹9,499</span>
+                                    </div>
+                                    <input type="checkbox" class="subject-select w-6 h-6 text-blue-600 rounded border-gray-300 focus:ring-blue-500" data-subject="Physics" data-class="10" data-board="ICSE" data-price="6499">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chemistry Card -->
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover scroll-animate" style="animation-delay: 0.1s;">
+                            <div class="h-48 bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center">
+                                <img src="https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?w=400" alt="Chemistry Course" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">Chemistry</h4>
+                                <div class="space-y-2 mb-4">
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-alt mr-2 text-purple-600"></i><span class="font-semibold">Duration:</span> 200 Days</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-week mr-2 text-purple-600"></i><span class="font-semibold">Days:</span> Tue, Thu, Sat</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-clock mr-2 text-purple-600"></i><span class="font-semibold">Time:</span> 5:00 PM - 6:30 PM</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-check mr-2 text-purple-600"></i><span class="font-semibold">Starting:</span> 1st January 2026</p>
+                                </div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <span class="text-2xl font-bold text-purple-600">₹6,499</span>
+                                        <span class="text-gray-500 line-through ml-2 text-sm">₹9,499</span>
+                                    </div>
+                                    <input type="checkbox" class="subject-select w-6 h-6 text-purple-600 rounded border-gray-300 focus:ring-purple-500" data-subject="Chemistry" data-class="10" data-board="ICSE" data-price="6499">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Biology Card -->
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover scroll-animate" style="animation-delay: 0.2s;">
+                            <div class="h-48 bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center">
+                                <img src="https://images.unsplash.com/photo-1576086213369-97a306d36557?w=400" alt="Biology Course" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">Biology</h4>
+                                <div class="space-y-2 mb-4">
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-alt mr-2 text-green-600"></i><span class="font-semibold">Duration:</span> 200 Days</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-week mr-2 text-green-600"></i><span class="font-semibold">Days:</span> Mon, Wed, Fri</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-clock mr-2 text-green-600"></i><span class="font-semibold">Time:</span> 6:30 PM - 8:00 PM</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-check mr-2 text-green-600"></i><span class="font-semibold">Starting:</span> 1st January 2026</p>
+                                </div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <span class="text-2xl font-bold text-green-600">₹6,499</span>
+                                        <span class="text-gray-500 line-through ml-2 text-sm">₹9,499</span>
+                                    </div>
+                                    <input type="checkbox" class="subject-select w-6 h-6 text-green-600 rounded border-gray-300 focus:ring-green-500" data-subject="Biology" data-class="10" data-board="ICSE" data-price="6499">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Math Card -->
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover scroll-animate" style="animation-delay: 0.3s;">
+                            <div class="h-48 bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center">
+                                <img src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400" alt="Math Course" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">Mathematics</h4>
+                                <div class="space-y-2 mb-4">
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-alt mr-2 text-orange-600"></i><span class="font-semibold">Duration:</span> 200 Days</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-week mr-2 text-orange-600"></i><span class="font-semibold">Days:</span> Tue, Thu, Sat</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-clock mr-2 text-orange-600"></i><span class="font-semibold">Time:</span> 4:00 PM - 5:30 PM</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-check mr-2 text-orange-600"></i><span class="font-semibold">Starting:</span> 1st January 2026</p>
+                                </div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <span class="text-2xl font-bold text-orange-600">₹6,499</span>
+                                        <span class="text-gray-500 line-through ml-2 text-sm">₹9,499</span>
+                                    </div>
+                                    <input type="checkbox" class="subject-select w-6 h-6 text-orange-600 rounded border-gray-300 focus:ring-orange-500" data-subject="Mathematics" data-class="10" data-board="ICSE" data-price="6499">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-8">
+                        <button onclick="openEnrollForm()" class="btn-primary text-white px-12 py-4 rounded-full font-bold text-lg">
+                            Enroll Now <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Success Stories Section -->
+    <section class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 scroll-animate">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Success Stories</h2>
+                <p class="text-xl text-gray-600">Our students achieve extraordinary results</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-8 rounded-2xl card-hover scroll-animate">
+                    <div class="flex items-center mb-4">
+                        <div class="w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center text-2xl font-bold text-white">
+                            12
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="font-bold text-gray-900">AIR 12</h4>
+                            <p class="text-sm text-gray-600">NEET 2024</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 mb-3 font-semibold">TN State First Rank in NEET</p>
+                    <p class="text-sm text-gray-600">Achieved with consistent guidance from Prof. Ravishankar</p>
+                </div>
+                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 p-8 rounded-2xl card-hover scroll-animate" style="animation-delay: 0.1s;">
+                    <div class="flex items-center mb-4">
+                        <div class="w-16 h-16 bg-blue-400 rounded-full flex items-center justify-center text-lg font-bold text-white">
+                            99.07%
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="font-bold text-gray-900">JEE Mains</h4>
+                            <p class="text-sm text-gray-600">2024</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 mb-3 font-semibold">99.07% Percentile</p>
+                    <p class="text-sm text-gray-600">Excellence achieved under Prof. Balaji Sampath's mentorship</p>
+                </div>
+                <div class="bg-gradient-to-br from-purple-50 to-pink-50 p-8 rounded-2xl card-hover scroll-animate" style="animation-delay: 0.2s;">
+                    <div class="flex items-center mb-4">
+                        <div class="w-16 h-16 bg-purple-400 rounded-full flex items-center justify-center text-2xl font-bold text-white">
+                            4
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="font-bold text-gray-900">AIR 4</h4>
+                            <p class="text-sm text-gray-600">JEE Advanced</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 mb-3 font-semibold">JEE Advanced AIR 4</p>
+                    <p class="text-sm text-gray-600">Outstanding performance with dedicated preparation</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 scroll-animate">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">What Students Say</h2>
+                <p class="text-xl text-gray-600">Hear from our successful students</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="testimonial-card p-8 rounded-2xl shadow-lg card-hover scroll-animate">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold">
+                            RS
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="font-bold text-gray-900">Rahul Sharma</h4>
+                            <div class="text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 italic">"The live classes are incredibly interactive. The faculty is amazing and always ready to help. I scored AIR 250 in JEE Mains thanks to Najah Tutors!"</p>
+                </div>
+                <div class="testimonial-card p-8 rounded-2xl shadow-lg card-hover scroll-animate" style="animation-delay: 0.1s;">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold">
+                            PK
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="font-bold text-gray-900">Priya Krishnan</h4>
+                            <div class="text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 italic">"Best decision I made for my NEET preparation. The study materials are comprehensive and the doubt clearing sessions are super helpful."</p>
+                </div>
+                <div class="testimonial-card p-8 rounded-2xl shadow-lg card-hover scroll-animate" style="animation-delay: 0.2s;">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center text-white font-bold">
+                            AM
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="font-bold text-gray-900">Aditya Mehta</h4>
+                            <div class="text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 italic">"I scored 98% in my CBSE board exams. The teachers explain concepts so well that even the toughest topics become easy to understand."</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-20 gradient-bg text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8 text-center">
+                <div class="scroll-animate">
+                    <div class="stats-counter mb-2" data-target="10000">0</div>
+                    <p class="text-xl">Happy Students</p>
+                </div>
+                <div class="scroll-animate" style="animation-delay: 0.1s;">
+                    <div class="stats-counter mb-2" data-target="50">0</div>
+                    <p class="text-xl">Expert Teachers</p>
+                </div>
+                <div class="scroll-animate" style="animation-delay: 0.2s;">
+                    <div class="stats-counter mb-2" data-target="500">0</div>
+                    <p class="text-xl">Live Classes</p>
+                </div>
+                <div class="scroll-animate" style="animation-delay: 0.3s;">
+                    <div class="stats-counter mb-2" data-target="98">0</div>
+                    <p class="text-xl">Success Rate %</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Registration Form Section (Hidden by default) -->
+    <section id="register" class="py-20 bg-white hidden">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 scroll-animate">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Complete Your Registration</h2>
+                <p class="text-xl text-gray-600">Fill in your details to enroll in the course</p>
+            </div>
+            <form id="enrollmentForm" class="bg-gradient-to-br from-purple-50 to-pink-50 p-8 md:p-12 rounded-3xl shadow-2xl scroll-animate">
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Selected Subjects</h3>
+                    <div id="selectedSubjects" class="bg-white p-4 rounded-lg mb-4">
+                        <p class="text-gray-600">No subjects selected yet</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-sm text-gray-600">Total Amount: </span>
+                        <span id="totalAmount" class="text-2xl font-bold text-purple-600">₹0</span>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Student Name *</label>
+                        <input type="text" name="studentName" required class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:outline-none transition" placeholder="Enter student name">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Phone Number *</label>
+                        <input type="tel" name="phone" required class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:outline-none transition" placeholder="Enter phone number">
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Email Address *</label>
+                        <input type="email" name="email" required class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:outline-none transition" placeholder="Enter email address">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Class *</label>
+                        <input type="text" id="selectedClass" readonly class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 bg-gray-100 cursor-not-allowed" placeholder="Select from courses above">
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Board *</label>
+                        <input type="text" id="selectedBoard" readonly class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 bg-gray-100 cursor-not-allowed" placeholder="Select from courses above">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">School Name (Optional)</label>
+                        <input type="text" name="schoolName" class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-purple-500 focus:outline-none transition" placeholder="Enter school name">
+                    </div>
+                </div>
+
+                <div class="flex gap-4">
+                    <button type="submit" class="flex-1 btn-primary text-white py-4 rounded-full font-bold text-lg">
+                        Complete Registration <i class="fas fa-check ml-2"></i>
+                    </button>
+                    <button type="button" onclick="closeEnrollForm()" class="px-8 py-4 rounded-full font-bold text-lg border-2 border-purple-600 text-purple-600 hover:bg-purple-50 transition">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center p-8 bg-white rounded-2xl shadow-lg card-hover scroll-animate">
+                    <div class="bg-gradient-to-br from-purple-500 to-pink-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-phone text-2xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Call Us</h3>
+                    <p class="text-gray-600">+91 98765 43210</p>
+                    <p class="text-gray-600">+91 98765 43211</p>
+                </div>
+                <div class="text-center p-8 bg-white rounded-2xl shadow-lg card-hover scroll-animate" style="animation-delay: 0.1s;">
+                    <div class="bg-gradient-to-br from-blue-500 to-cyan-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-envelope text-2xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Email Us</h3>
+                    <p class="text-gray-600"><a href="mailto:info@najahtutors.net" class="__cf_email__" data-cfemail="3e575058517e505f545f564a4b4a514c4d10505b4a">info@najahtutors.net</a></p>
+                    <p class="text-gray-600"><a href="mailto:info@kiccpa.com" class="__cf_email__" data-cfemail="9eedebeeeef1eceadef0fff4fff6eaebeaf1ecedb0f0fbea">info@kiccpa.com</a></p>
+                </div>
+                <div class="text-center p-8 bg-white rounded-2xl shadow-lg card-hover scroll-animate" style="animation-delay: 0.2s;">
+                    <div class="bg-gradient-to-br from-green-500 to-emerald-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-map-marker-alt text-2xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Visit Us</h3>
+                    <p class="text-gray-600">123, Education Street</p>
+                    <p class="text-gray-600">Bangalore, India</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <img src="https://najahtutors.net/logo.png" alt="Najah Tutors" class="h-12 w-auto mb-4">
+                    <p class="text-gray-400">Excellence in Online Education</p>
+                    <div class="flex space-x-4 mt-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-facebook text-2xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-twitter text-2xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-instagram text-2xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-youtube text-2xl"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#home" class="text-gray-400 hover:text-white transition">Home</a></li>
+                        <li><a href="#courses" class="text-gray-400 hover:text-white transition">Courses</a></li>
+                        <li><a href="#features" class="text-gray-400 hover:text-white transition">Features</a></li>
+                        <li><a href="#about" class="text-gray-400 hover:text-white transition">About</a></li>
+                        <li><a href="#register" class="text-gray-400 hover:text-white transition">Register</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-4">Courses</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Physics</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Chemistry</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Biology</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Mathematics</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-4">Contact Info</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><i class="fas fa-phone mr-2"></i> +91 98765 43210</li>
+                        <li><i class="fas fa-envelope mr-2"></i> <a href="mailto:info@najahtutors.net" class="__cf_email__" data-cfemail="9df4f3fbf2ddf3fcf7fcf5e9e8e9f2efeeb3f3f8e9">info@najahtutors.net</a></li>
+                        <li><i class="fas fa-map-marker-alt mr-2"></i> Bangalore, India</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8 text-center text-gray-400">
+                <p>&copy; 2025-2026 Najah Tutors. All rights reserved. | Designed with ❤️ for Education</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Chat Button -->
+    <button id="chatButton" class="fixed bottom-8 right-8 bg-gradient-to-r from-purple-500 to-pink-500 text-white w-12 h-12 rounded-full shadow-lg hover:shadow-xl transition transform hover:scale-110 z-50 flex items-center justify-center">
+        <i class="fas fa-comment-dots text-lg"></i>
+    </button>
+
+    <script>
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Board Tab Switching
+        function switchBoard(board) {
+            const cbseTab = document.getElementById('cbse-tab');
+            const icseTab = document.getElementById('icse-tab');
+            const cbseContent = document.getElementById('cbse-content');
+            const icseContent = document.getElementById('icse-content');
+
+            if (board === 'cbse') {
+                cbseTab.classList.add('active');
+                icseTab.classList.remove('active');
+                cbseContent.classList.remove('hidden');
+                icseContent.classList.add('hidden');
+            } else {
+                icseTab.classList.add('active');
+                cbseTab.classList.remove('active');
+                icseContent.classList.remove('hidden');
+                cbseContent.classList.add('hidden');
+            }
+
+            // Reset selections when switching boards
+            resetSelections();
+        }
+
+        // Track selected subjects
+        let selectedSubjects = [];
+
+        // Listen to checkbox changes
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('subject-select')) {
+                updateSelectedSubjects();
+            }
+        });
+
+        function updateSelectedSubjects() {
+            selectedSubjects = [];
+            const checkboxes = document.querySelectorAll('.subject-select:checked');
+            
+            checkboxes.forEach(cb => {
+                selectedSubjects.push({
+                    subject: cb.dataset.subject,
+                    class: cb.dataset.class,
+                    board: cb.dataset.board,
+                    price: parseInt(cb.dataset.price)
+                });
+            });
+
+            updateSelectionDisplay();
+        }
+
+        function updateSelectionDisplay() {
+            const selectedDiv = document.getElementById('selectedSubjects');
+            const totalAmountSpan = document.getElementById('totalAmount');
+            
+            if (selectedSubjects.length === 0) {
+                selectedDiv.innerHTML = '<p class="text-gray-600">No subjects selected yet</p>';
+                totalAmountSpan.textContent = '₹0';
+                return;
+            }
+
+            let total = 0;
+            let html = '<ul class="space-y-2">';
+            
+            selectedSubjects.forEach(subject => {
+                total += subject.price;
+                html += `<li class="flex justify-between items-center">
+                    <span class="font-semibold text-gray-700">${subject.subject} - Class ${subject.class} (${subject.board})</span>
+                    <span class="text-purple-600 font-bold">₹${subject.price.toLocaleString()}</span>
+                </li>`;
+            });
+            
+            html += '</ul>';
+            selectedDiv.innerHTML = html;
+            totalAmountSpan.textContent = '₹' + total.toLocaleString();
+
+            // Update class and board fields
+            if (selectedSubjects.length > 0) {
+                document.getElementById('selectedClass').value = selectedSubjects[0].class;
+                document.getElementById('selectedBoard').value = selectedSubjects[0].board;
+            }
+        }
+
+        function resetSelections() {
+            // Uncheck all checkboxes
+            document.querySelectorAll('.subject-select').forEach(cb => {
+                cb.checked = false;
+            });
+            selectedSubjects = [];
+            updateSelectionDisplay();
+        }
+
+        // Open Enroll Form
+        function openEnrollForm() {
+            if (selectedSubjects.length === 0) {
+                alert('Please select at least one subject before enrolling!');
+                return;
+            }
+
+            const registerSection = document.getElementById('register');
+            registerSection.classList.remove('hidden');
+            
+            // Smooth scroll to form
+            registerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Close Enroll Form
+        function closeEnrollForm() {
+            const registerSection = document.getElementById('register');
+            registerSection.classList.add('hidden');
+            
+            // Scroll back to courses
+            document.getElementById('courses').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Smooth Scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                
+                // Don't prevent default for register link if form is hidden
+                if (href === '#register') {
+                    const registerSection = document.getElementById('register');
+                    if (registerSection.classList.contains('hidden')) {
+                        e.preventDefault();
+                        alert('Please select subjects and click "Enroll Now" button to register.');
+                        return;
+                    }
+                }
+                
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    mobileMenu.classList.add('hidden');
+                }
+            });
+        });
+
+        // Scroll Animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.scroll-animate').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Stats Counter Animation
+        const counters = document.querySelectorAll('.stats-counter');
+        let hasAnimated = false;
+
+        const statsObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !hasAnimated) {
+                    hasAnimated = true;
+                    counters.forEach(counter => {
+                        const target = parseInt(counter.getAttribute('data-target'));
+                        const duration = 2000;
+                        const increment = target / (duration / 16);
+                        let current = 0;
+
+                        const updateCounter = () => {
+                            current += increment;
+                            if (current < target) {
+                                counter.textContent = Math.floor(current).toLocaleString();
+                                requestAnimationFrame(updateCounter);
+                            } else {
+                                counter.textContent = target.toLocaleString() + (counter.textContent.includes('%') ? '' : '+');
+                            }
+                        };
+
+                        updateCounter();
+                    });
+                }
+            });
+        }, observerOptions);
+
+        counters.forEach(counter => {
+            statsObserver.observe(counter.parentElement);
+        });
+
+        // Chat button
+        const chatButton = document.getElementById('chatButton');
+        chatButton.addEventListener('click', () => {
+            window.open('https://wa.me/919876543210?text=Hi%20Najah%20Tutors,%20I%20have%20a%20question%20about%20live%20classes', '_blank');
+        });
+
+        // Form Submission
+        document.getElementById('enrollmentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = new FormData(e.target);
+            const data = {
+                studentName: formData.get('studentName'),
+                phone: formData.get('phone'),
+                email: formData.get('email'),
+                class: document.getElementById('selectedClass').value,
+                board: document.getElementById('selectedBoard').value,
+                schoolName: formData.get('schoolName'),
+                subjects: selectedSubjects,
+                totalAmount: selectedSubjects.reduce((sum, s) => sum + s.price, 0)
+            };
+
+            try {
+                const response = await fetch('http://localhost:5000/api/public/enroll', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || 'Failed to submit enrollment');
+                }
+
+                alert('Thank you for registering! Your enrollment has been received.\n\nSelected Subjects: ' +
+                    selectedSubjects.map(s => s.subject).join(', ') +
+                    '\nTotal Amount: ₹' + data.totalAmount.toLocaleString());
+
+                // Reset form
+                e.target.reset();
+                closeEnrollForm();
+                resetSelections();
+            } catch (error) {
+                console.error('Error submitting enrollment:', error);
+                alert('Sorry, there was a problem submitting your enrollment. Please try again.');
+            }
+        });
+
+        // Add active class to navigation on scroll
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('nav a[href^="#"]');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (window.pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('text-purple-600');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('text-purple-600');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
