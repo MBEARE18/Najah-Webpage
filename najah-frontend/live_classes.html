@@ -1405,7 +1405,6 @@
             closeEnrollForm();
             resetSelections();
             } catch (error) {
-                console.error('Error submitting enrollment:', error);
                 alert('Sorry, there was a problem submitting your enrollment. Please try again.');
             }
         });
@@ -1433,11 +1432,44 @@
         });
 
         // ---------- Dynamic Live Classes from Admin ----------
+        const API_ORIGIN = (function() {
+            try {
+                if (API_BASE_URL && API_BASE_URL.startsWith('http')) {
+                    return new URL(API_BASE_URL).origin;
+                }
+                return window.location.origin || 'http://localhost:5000';
+            } catch (e) {
+                return 'http://localhost:5000';
+            }
+        })();
+
+        function buildImageUrl(path) {
+            const fallback = 'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=400';
+            if (!path) return fallback;
+            if (path.startsWith('http')) return path;
+            return `${API_ORIGIN}${path}`;
+        }
+
         let liveClassesLoaded = false; // Prevent duplicate loading
+        const gridStaticCounts = {};
+
+        function initGridStaticCounts() {
+            ['cbse-9-grid', 'cbse-10-grid', 'icse-9-grid', 'icse-10-grid'].forEach(id => {
+                const grid = document.getElementById(id);
+                if (grid) {
+                    gridStaticCounts[id] = grid.querySelectorAll('.bg-white.rounded-2xl').length;
+                }
+            });
+        }
+
+        function getPositionInGrid(grid) {
+            const base = gridStaticCounts[grid.id] || 0;
+            const dynamicCount = grid.querySelectorAll('[data-live-class-id]').length;
+            return base + dynamicCount; // zero-based position for new card
+        }
         
         function getGridForLiveClass(board, className) {
             if (!board || !className) {
-                console.warn('Missing board or className:', { board, className });
                 return null;
             }
             const b = board.toString().toUpperCase().trim();
@@ -1445,8 +1477,6 @@
             let cNorm = className.toString().toLowerCase().trim();
             // Extract just the number (9, 10, etc.)
             const classNum = cNorm.replace(/[^0-9]/g, '');
-
-            console.log('Matching grid for:', { originalBoard: board, originalClass: className, normalizedBoard: b, classNum });
 
             const gridId = 
                 (b === 'CBSE' || b.includes('CBSE')) 
@@ -1458,13 +1488,8 @@
             if (gridId) {
                 const grid = document.getElementById(gridId);
                 if (grid) {
-                    console.log('✓ Found grid:', gridId);
                     return grid;
-                } else {
-                    console.error('✗ Grid element not found in DOM:', gridId);
                 }
-            } else {
-                console.warn('✗ No matching grid ID for:', { board: b, classNum });
             }
             return null;
         }
@@ -1472,53 +1497,39 @@
         async function loadDynamicLiveClasses() {
             // Prevent duplicate loading
             if (liveClassesLoaded) {
-                console.log('⏭️ Live classes already loaded, skipping...');
                 return;
             }
             
             try {
-                console.log('🔄 Loading dynamic live classes from:', `${API_BASE_URL}/live-classes`);
                 const res = await fetch(`${API_BASE_URL}/live-classes`);
                 
                 if (!res.ok) {
-                    console.error('❌ API request failed:', res.status, res.statusText);
                     return;
                 }
                 
                 const result = await res.json();
-                console.log('📦 Live classes API response:', result);
 
                 if (!result.success || !result.data || !result.data.length) {
-                    console.log('ℹ️ No live classes found or empty response');
                     liveClassesLoaded = true; // Mark as loaded even if empty
                     return;
                 }
 
-                console.log(`✅ Found ${result.data.length} live class(es) to display`);
+                // Capture initial static counts before inserting new cards
+                initGridStaticCounts();
 
                 let addedCount = 0;
                 result.data.forEach((cls, index) => {
                     const board = cls.board || (cls.course && cls.course.board) || '';
                     const className = cls.className || (cls.course && cls.course.class) || '';
                     
-                    console.log(`\n📋 Processing live class ${index + 1}/${result.data.length}:`, {
-                        id: cls._id,
-                        board: board,
-                        className: className,
-                        subject: cls.subject,
-                        title: cls.title
-                    });
-                    
                     const grid = getGridForLiveClass(board, className);
                     if (!grid) {
-                        console.warn(`⚠️ Skipping live class ${index + 1} - no matching grid found for board: "${board}", class: "${className}"`);
                         return;
                     }
                     
                     // Check if this live class card already exists (prevent duplicates)
                     const existingCard = grid.querySelector(`[data-live-class-id="${cls._id}"]`);
                     if (existingCard) {
-                        console.log(`⏭️ Live class ${cls._id} already exists in grid, skipping...`);
                         return;
                     }
 
@@ -1550,23 +1561,8 @@
                     const price = cls.price || 0;
                     const discountPrice = cls.discountPrice && cls.discountPrice > 0 && cls.discountPrice < price ? cls.discountPrice : null;
                     
-                    // Format price display - show discounted price first if available, otherwise show regular price
-                    let priceDisplay = '';
-                    if (price > 0) {
-                        if (discountPrice && discountPrice > 0 && discountPrice < price) {
-                            // Show discounted price (blue, large) and original price (gray, crossed out, small)
-                            priceDisplay = `<span class="text-2xl font-bold text-blue-600">₹${discountPrice.toLocaleString()}</span><span class="text-gray-500 line-through ml-2 text-sm">₹${price.toLocaleString()}</span>`;
-                        } else {
-                            // Show only regular price
-                            priceDisplay = `<span class="text-2xl font-bold text-blue-600">₹${price.toLocaleString()}</span>`;
-                        }
-                    } else {
-                        priceDisplay = '<span class="text-gray-500 text-sm">Price on request</span>';
-                    }
-
                     // Count existing cards in this grid (including static cards) to determine position
-                    const existingCards = grid.querySelectorAll('.bg-white.rounded-2xl');
-                    const positionInGrid = existingCards.length; // This will be the position of the new card
+                const positionInGrid = getPositionInGrid(grid);
                     const delay = (positionInGrid % 4) * 0.1; // small stagger
                     
                     // Get gradient color based on position in row (cycles every 4 cards: Blue, Purple, Green, Red)
@@ -1577,25 +1573,49 @@
                         'from-red-400 to-red-600'        // 4th card in row (position 3, 7, 11...)
                     ];
                     const gradient = gradients[positionInGrid % 4];
+                    const accentColors = [
+                        'text-blue-600',
+                        'text-purple-600',
+                        'text-green-600',
+                        'text-red-600'
+                    ];
+                    const accentColor = accentColors[positionInGrid % 4];
 
+                    // Format price display - show discounted price first if available, otherwise show regular price
+                    let priceDisplay = '';
+                    if (price > 0) {
+                        if (discountPrice && discountPrice > 0 && discountPrice < price) {
+                            priceDisplay = `<span class="text-2xl font-bold ${accentColor}">₹${discountPrice.toLocaleString()}</span><span class="text-gray-500 line-through ml-2 text-sm">₹${price.toLocaleString()}</span>`;
+                        } else {
+                            priceDisplay = `<span class="text-2xl font-bold ${accentColor}">₹${price.toLocaleString()}</span>`;
+                        }
+                    } else {
+                        priceDisplay = '<span class="text-gray-500 text-sm">Price on request</span>';
+                    }
+
+                    // Use custom image URL if available, otherwise use default. Prefix relative uploads with API origin.
+                    const imageUrl = cls.imageUrl
+                        ? (cls.imageUrl.startsWith('http') ? cls.imageUrl : `${API_ORIGIN}${cls.imageUrl}`)
+                        : 'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=400';
+                    
                     const cardHtml = `
                         <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover scroll-animate" data-live-class-id="${cls._id}" style="animation-delay: ${delay}s;">
-                            <div class="h-48 bg-gradient-to-br ${gradient} flex items-center justify-center">
-                                <img src="https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=400" alt="${subject}" class="w-full h-full object-cover">
+                            <div class="h-48">
+                                <img src="${imageUrl}" alt="${subject}" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=400'">
                             </div>
                             <div class="p-6">
                                 <h4 class="text-2xl font-bold text-gray-900 mb-4">${subject}</h4>
                                 <div class="space-y-2 mb-4">
-                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-alt mr-2 text-blue-600"></i><span class="font-semibold">Duration:</span> ${durationText}</p>
-                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-week mr-2 text-blue-600"></i><span class="font-semibold">Days:</span> ${daysText}</p>
-                                    <p class="text-sm text-gray-600"><i class="fas fa-clock mr-2 text-blue-600"></i><span class="font-semibold">Time:</span> ${timeLabel}</p>
-                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-check mr-2 text-blue-600"></i><span class="font-semibold">Starting:</span> ${startDateLabel}</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-alt mr-2 ${accentColor}"></i><span class="font-semibold">Duration:</span> ${durationText}</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-week mr-2 ${accentColor}"></i><span class="font-semibold">Days:</span> ${daysText}</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-clock mr-2 ${accentColor}"></i><span class="font-semibold">Time:</span> ${timeLabel}</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-check mr-2 ${accentColor}"></i><span class="font-semibold">Starting:</span> ${startDateLabel}</p>
                                 </div>
                                 <div class="flex items-center justify-between mb-4">
                                     <div>
                                         ${priceDisplay}
                                     </div>
-                                    <input type="checkbox" class="subject-select w-6 h-6 text-blue-600 rounded border-gray-300 focus:ring-blue-500" data-subject="${subject}" data-class="${className.replace(/th|st|nd|rd/gi, '')}" data-board="${board}" data-price="${discountPrice && discountPrice > 0 && discountPrice < price ? discountPrice : price}">
+                                    <input type="checkbox" class="subject-select w-6 h-6 ${accentColor} rounded border-gray-300 focus:ring-blue-500" data-subject="${subject}" data-class="${className.replace(/th|st|nd|rd/gi, '')}" data-board="${board}" data-price="${discountPrice && discountPrice > 0 && discountPrice < price ? discountPrice : price}">
                                 </div>
                             </div>
                         </div>
@@ -1607,20 +1627,12 @@
                         const gridParent = grid.closest('.board-content');
                         const parentStyle = gridParent ? window.getComputedStyle(gridParent) : null;
                         
-                        if (gridStyle.display === 'none' || (parentStyle && parentStyle.display === 'none')) {
-                            console.warn(`⚠️ Grid is hidden: ${board} ${className} - grid display: ${gridStyle.display}, parent display: ${parentStyle ? parentStyle.display : 'N/A'}`);
-                        }
-                        
                         grid.insertAdjacentHTML('beforeend', cardHtml);
                         addedCount++;
                         
                         // Verify the card was actually added to DOM and is visible
                         const addedCard = grid.querySelector(`[data-live-class-id="${cls._id}"]`);
                         if (addedCard) {
-                            const cardStyle = window.getComputedStyle(addedCard);
-                            console.log(`✅ Added live class card #${addedCount} to grid: ${board} ${className} - ${subject}`);
-                            console.log(`   Card visibility: display=${cardStyle.display}, visibility=${cardStyle.visibility}, opacity=${cardStyle.opacity}`);
-                            
                             // Force visibility just in case
                             addedCard.style.display = 'block';
                             addedCard.style.visibility = 'visible';
@@ -1632,18 +1644,12 @@
                                     addedCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                                 }, 100);
                             }
-                        } else {
-                            console.error(`❌ Card was not added to DOM: ${board} ${className} - ${subject}`);
                         }
-                    } else {
-                        console.error(`❌ Grid not found for: ${board} ${className}`);
                     }
                 });
                 
                 liveClassesLoaded = true; // Mark as loaded
-                console.log(`\n🎉 Finished loading dynamic live classes. Added ${addedCount} out of ${result.data.length} class(es).`);
             } catch (err) {
-                console.error('❌ Error loading live classes:', err);
                 liveClassesLoaded = true; // Mark as loaded even on error to prevent retry loops
             }
         }
@@ -1683,10 +1689,8 @@
             const allGridsExist = grids.every(id => document.getElementById(id) !== null);
             
             if (allGridsExist) {
-                console.log('All grids found, loading live classes...');
                 loadDynamicLiveClasses();
             } else {
-                console.log('Waiting for grids to be available...');
                 setTimeout(initLiveClasses, 100);
             }
         }
@@ -1700,5 +1704,28 @@
             initLiveClasses();
         });
     </script>
+
+    <!-- Push Notifications -->
+    <script>
+        // Register service worker for push notifications
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // Check if we're running on a server (not file://)
+                if (window.location.protocol === 'file:') {
+                    console.warn('Service Worker requires HTTP/HTTPS. Please access via http://localhost:5000');
+                    return;
+                }
+                
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registered:', registration);
+                    })
+                    .catch(error => {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
+    <script src="/push-notifications.js" onerror="console.error('Failed to load push-notifications.js. Make sure server is running and file is accessible.')"></script>
 </body>
 </html>

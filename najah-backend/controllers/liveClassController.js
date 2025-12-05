@@ -1,6 +1,7 @@
 const LiveClass = require('../models/LiveClass');
 const Course = require('../models/Course');
 const User = require('../models/User');
+const { sendBulkClassNotifications, sendClassCancellationNotification } = require('../utils/notificationService');
 
 // @desc    Get all live classes
 // @route   GET /api/live-classes
@@ -69,7 +70,47 @@ exports.createLiveClass = async (req, res, next) => {
 
     const populatedClass = await LiveClass.findById(liveClass._id)
       .populate('course', 'name board class')
-      .populate('teacher', 'name email');
+      .populate('teacher', 'name email')
+      .populate('enrolledStudents', 'name email phone pushSubscription notificationPreferences');
+
+    // Send notifications to ALL enrolled students (students who have enrolled in any subject)
+    try {
+      // Get all active students who have enrolled in any subject
+      const allStudents = await User.find({ 
+        role: 'student', 
+        isActive: true 
+      }).select('name email phone pushSubscription notificationPreferences board class');
+
+      // Filter students based on notification preferences
+      // Notify ALL enrolled students (who have enrolled in any subject) regardless of board/class
+      const studentsToNotify = allStudents.filter(student => {
+        // Check if student has at least one notification channel enabled
+        // Default to true if preferences not set (to ensure all students get notified)
+        if (!student.notificationPreferences) {
+          return true; // No preferences set, send notifications
+        }
+
+        // Check if at least one channel is enabled
+        const emailEnabled = student.notificationPreferences.email !== false;
+        const whatsappEnabled = student.notificationPreferences.whatsapp !== false;
+        const pushEnabled = student.notificationPreferences.push !== false;
+
+        // Send notification if at least one channel is enabled
+        return emailEnabled || whatsappEnabled || pushEnabled;
+      });
+      
+      if (studentsToNotify.length > 0) {
+        console.log(`Sending notifications to ${studentsToNotify.length} enrolled students for new live class: ${populatedClass.subject}`);
+        // Send notifications asynchronously (don't wait for completion)
+        sendBulkClassNotifications(studentsToNotify, populatedClass).catch(err => {
+          console.error('Error sending class notifications:', err);
+        });
+      } else {
+        console.log('No students to notify (no matching students or preferences disabled)');
+      }
+    } catch (notifError) {
+      console.error('Notification error (non-blocking):', notifError);
+    }
 
     res.status(201).json({
       success: true,
@@ -97,10 +138,38 @@ exports.updateLiveClass = async (req, res, next) => {
       });
     }
 
+    const wasCancelled = liveClass.status !== 'cancelled' && req.body.status === 'cancelled';
+
     liveClass = await LiveClass.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true
-    }).populate('course', 'name board class').populate('teacher', 'name email');
+    }).populate('course', 'name board class')
+      .populate('teacher', 'name email')
+      .populate('enrolledStudents', 'name email phone pushSubscription notificationPreferences');
+
+    // Send cancellation notifications if class was cancelled
+    if (wasCancelled && liveClass.enrolledStudents && liveClass.enrolledStudents.length > 0) {
+      try {
+        const studentsToNotify = liveClass.enrolledStudents.filter(student => {
+          return student.notificationPreferences && (
+            student.notificationPreferences.email ||
+            student.notificationPreferences.whatsapp ||
+            student.notificationPreferences.push
+          );
+        });
+        
+        if (studentsToNotify.length > 0) {
+          const reason = req.body.cancellationReason || 'Class has been cancelled';
+          for (const student of studentsToNotify) {
+            sendClassCancellationNotification(student, liveClass, reason).catch(err => {
+              console.error('Error sending cancellation notification:', err);
+            });
+          }
+        }
+      } catch (notifError) {
+        console.error('Notification error (non-blocking):', notifError);
+      }
+    }
 
     res.status(200).json({
       success: true,
@@ -172,6 +241,23 @@ exports.enrollInClass = async (req, res, next) => {
 
     liveClass.enrolledStudents.push(req.user.id);
     await liveClass.save();
+
+    // Send notification to the newly enrolled student
+    try {
+      const student = await User.findById(req.user.id);
+      if (student) {
+        const populatedClass = await LiveClass.findById(liveClass._id)
+          .populate('course', 'name board class')
+          .populate('teacher', 'name email');
+        
+        const { sendClassScheduleNotification } = require('../utils/notificationService');
+        sendClassScheduleNotification(student, populatedClass).catch(err => {
+          console.error('Error sending enrollment notification:', err);
+        });
+      }
+    } catch (notifError) {
+      console.error('Notification error (non-blocking):', notifError);
+    }
 
     res.status(200).json({
       success: true,

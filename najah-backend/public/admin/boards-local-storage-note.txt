@@ -1,5 +1,0 @@
-// Boards are currently managed only in the admin UI and stored in browser localStorage (key: 'adminBoards').
-// Backend schemas (User, Subject, etc.) still restrict board to ['CBSE', 'ICSE', ''].
-// If you later want boards to be fully dynamic, add a proper Board model and API.
-
-

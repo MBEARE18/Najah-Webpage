@@ -1,0 +1,27 @@
+===========================================
+VAPID KEYS GENERATED - ADD TO YOUR .env FILE
+===========================================
+
+Add these lines to your najah-backend/.env file:
+
+VAPID_PUBLIC_KEY=BANIrSJ8XUjYJZiXa4X1TLPZ68pAblrQ0QRTf6k0OFkAzz__kF3NiwleSZr5oukKNBnJW-KSf3dGM7bBxG1en9Y
+VAPID_PRIVATE_KEY=3RPrrJY4bbzaVYRGLunLUEARXpWq4EHCWPqwMvtF_rg
+VAPID_SUBJECT=mailto:noreply@najahtutors.com
+
+===========================================
+IMPORTANT NOTES:
+===========================================
+
+1. Replace mailto:noreply@najahtutors.com with your actual email or website URL
+2. Keep these keys SECRET - never commit them to version control
+3. After adding to .env, restart your server for changes to take effect
+4. The VAPID_SUBJECT should be a mailto: link or your website URL
+
+===========================================
+NEXT STEPS:
+===========================================
+
+1. Add the keys to your .env file
+2. Restart your backend server
+3. Test push notifications from the frontend
+

@@ -18,6 +18,9 @@ const createTransporter = () => {
   });
 };
 
+// Export createTransporter for use in other modules
+exports.createTransporter = createTransporter;
+
 // Send welcome email with password
 exports.sendWelcomeEmail = async (email, name, password) => {
   try {

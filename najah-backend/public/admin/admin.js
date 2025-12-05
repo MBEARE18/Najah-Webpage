@@ -12,6 +12,10 @@ let filteredStudents = [];
 let subjectsList = [];
 let boardsList = [];
 let classesList = [];
+let editingSubjectId = null;
+let editingStudentId = null;
+let editingTeacherId = null;
+let teachersCache = [];
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
@@ -94,7 +98,8 @@ function showSection(sectionName) {
         'classes': 'Class Management',
         'courses': 'Subjects',
         'enrollments': 'Enrollments',
-        'live-classes': 'Live Classes'
+        'live-classes': 'Live Classes',
+        'notifications': 'Notifications'
     };
     document.getElementById('page-title').textContent = titles[sectionName] || 'Dashboard';
 
@@ -315,51 +320,31 @@ function editStudent(id) {
         return;
     }
 
-    const name = prompt('Student Name', student.name || '');
-    if (name === null) return;
+    const modal = document.getElementById('editStudentModal');
+    const form = document.getElementById('editStudentForm');
+    const status = document.getElementById('editStudentStatus');
+    const nameInput = document.getElementById('editStudentName');
+    const emailInput = document.getElementById('editStudentEmail');
+    const phoneInput = document.getElementById('editStudentPhone');
+    const classInput = document.getElementById('editStudentClass');
+    const boardSelect = document.getElementById('editStudentBoard');
+    const schoolInput = document.getElementById('editStudentSchool');
 
-    const email = prompt('Email Address', student.email || '');
-    if (email === null) return;
+    if (!modal || !form) {
+        alert('Edit form not available');
+        return;
+    }
 
-    const phone = prompt('Phone Number', student.phone || '');
-    if (phone === null) return;
+    editingStudentId = id;
+    if (status) status.classList.add('hidden');
+    if (nameInput) nameInput.value = student.name || '';
+    if (emailInput) emailInput.value = student.email || '';
+    if (phoneInput) phoneInput.value = student.phone || '';
+    if (classInput) classInput.value = student.class || '';
+    if (boardSelect) boardSelect.value = (student.board || '').toUpperCase();
+    if (schoolInput) schoolInput.value = student.schoolName || '';
 
-    const studentClass = prompt('Class', student.class || '');
-    if (studentClass === null) return;
-
-    const board = prompt('Board (CBSE/ICSE)', student.board || '');
-    if (board === null) return;
-
-    const schoolName = prompt('School Name', student.schoolName || '');
-    if (schoolName === null) return;
-
-    fetch(`${API_BASE_URL}/students/${id}`, {
-        method: 'PUT',
-        headers: {
-            'Authorization': `Bearer ${authToken}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            name: name.trim(),
-            email: email.trim(),
-            phone: phone.trim(),
-            class: studentClass.trim(),
-            board: board.trim().toUpperCase(),
-            schoolName: schoolName.trim()
-        })
-    })
-    .then(response => {
-        if (response.ok) {
-            loadStudents();
-        } else {
-            return response.json().then(data => {
-                throw new Error(data.message || 'Failed to update student');
-            });
-        }
-    })
-    .catch(error => {
-        alert(error.message);
-    });
+    modal.classList.remove('hidden');
 }
 
 function deleteStudent(id) {
@@ -390,6 +375,108 @@ function deleteStudent(id) {
     });
 }
 
+// Student edit modal handlers
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('editStudentModal');
+    const form = document.getElementById('editStudentForm');
+    const closeBtn = document.getElementById('closeEditStudentModal');
+    const closeBtnFooter = document.getElementById('closeEditStudentModalFooter');
+
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeEditStudentModal();
+            }
+        });
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeEditStudentModal);
+    }
+    if (closeBtnFooter) {
+        closeBtnFooter.addEventListener('click', closeEditStudentModal);
+    }
+
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const status = document.getElementById('editStudentStatus');
+            if (status) status.classList.add('hidden');
+
+            const nameInput = document.getElementById('editStudentName');
+            const emailInput = document.getElementById('editStudentEmail');
+            const phoneInput = document.getElementById('editStudentPhone');
+            const classInput = document.getElementById('editStudentClass');
+            const boardSelect = document.getElementById('editStudentBoard');
+            const schoolInput = document.getElementById('editStudentSchool');
+
+            const payload = {
+                name: nameInput ? nameInput.value.trim() : '',
+                email: emailInput ? emailInput.value.trim() : '',
+                phone: phoneInput ? phoneInput.value.trim() : '',
+                class: classInput ? classInput.value.trim() : '',
+                board: boardSelect ? boardSelect.value.trim() : '',
+                schoolName: schoolInput ? schoolInput.value.trim() : ''
+            };
+
+            if (!payload.name || !payload.email) {
+                showEditStudentStatus('Name and Email are required.', 'error');
+                return;
+            }
+
+            try {
+                showLoading();
+                const response = await fetch(`${API_BASE_URL}/students/${editingStudentId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                hideLoading();
+
+                if (!response.ok) {
+                    throw new Error(result.message || 'Failed to update student');
+                }
+
+                showEditStudentStatus('Student updated successfully!', 'success');
+                setTimeout(() => {
+                    closeEditStudentModal();
+                    loadStudents();
+                }, 800);
+            } catch (err) {
+                hideLoading();
+                showEditStudentStatus(err.message || 'Failed to update student', 'error');
+            }
+        });
+    }
+});
+
+function closeEditStudentModal() {
+    const modal = document.getElementById('editStudentModal');
+    const form = document.getElementById('editStudentForm');
+    const status = document.getElementById('editStudentStatus');
+    if (modal) modal.classList.add('hidden');
+    if (form) form.reset();
+    if (status) status.classList.add('hidden');
+    editingStudentId = null;
+}
+
+function showEditStudentStatus(message, type) {
+    const statusDiv = document.getElementById('editStudentStatus');
+    if (!statusDiv) return;
+    statusDiv.className = `p-3 rounded-lg text-sm ${
+        type === 'error'
+            ? 'bg-red-100 text-red-700 border border-red-200'
+            : 'bg-green-100 text-green-700 border border-green-200'
+    }`;
+    statusDiv.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'} mr-2"></i>${message}`;
+    statusDiv.classList.remove('hidden');
+}
+
 // Teachers
 async function loadTeachers() {
     try {
@@ -403,9 +490,10 @@ async function loadTeachers() {
         if (!response.ok) throw new Error('Failed to load teachers');
 
         const result = await response.json();
+        teachersCache = result.data || [];
         const tbody = document.getElementById('teachers-table-body');
         
-        tbody.innerHTML = result.data.map(teacher => `
+        tbody.innerHTML = teachersCache.map(teacher => `
             <tr>
                 <td class="px-4 py-3 whitespace-nowrap">${teacher.name}</td>
                 <td class="px-4 py-3 whitespace-nowrap">${teacher.email}</td>
@@ -419,6 +507,9 @@ async function loadTeachers() {
                 <td class="px-4 py-3 whitespace-nowrap">
                     <button onclick="editTeacher('${teacher._id}')" class="text-blue-600 hover:text-blue-800 mr-2">
                         <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="deleteTeacher('${teacher._id}')" class="text-red-600 hover:text-red-800">
+                        <i class="fas fa-trash"></i>
                     </button>
                 </td>
             </tr>
@@ -436,6 +527,8 @@ function showAddTeacherModal() {
     const modal = document.getElementById('addTeacherModal');
     const form = document.getElementById('addTeacherForm');
     const status = document.getElementById('teacherFormStatus');
+    const title = document.querySelector('#addTeacherModal h3');
+    const submitBtn = document.querySelector('#addTeacherForm button[type="submit"]');
 
     if (!modal || !form) {
         console.error('Teacher modal or form not found');
@@ -447,6 +540,9 @@ function showAddTeacherModal() {
         modal.classList.remove('hidden');
         form.reset();
         if (status) status.classList.add('hidden');
+        editingTeacherId = null;
+        if (title) title.textContent = 'Add New Teacher';
+        if (submitBtn) submitBtn.innerHTML = `<i class="fas fa-plus mr-2"></i>Add Teacher`;
     };
 
     if (!subjectsList.length) {
@@ -460,10 +556,15 @@ function closeAddTeacherModal() {
     const modal = document.getElementById('addTeacherModal');
     const form = document.getElementById('addTeacherForm');
     const status = document.getElementById('teacherFormStatus');
+    const title = document.querySelector('#addTeacherModal h3');
+    const submitBtn = document.querySelector('#addTeacherForm button[type="submit"]');
 
     if (modal) modal.classList.add('hidden');
     if (form) form.reset();
     if (status) status.classList.add('hidden');
+    editingTeacherId = null;
+    if (title) title.textContent = 'Add New Teacher';
+    if (submitBtn) submitBtn.innerHTML = `<i class="fas fa-plus mr-2"></i>Add Teacher`;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -499,8 +600,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 showLoading();
-                const response = await fetch(`${API_BASE_URL}/admin/teachers`, {
-                    method: 'POST',
+                const isEdit = !!editingTeacherId;
+                const url = isEdit ? `${API_BASE_URL}/admin/teachers/${editingTeacherId}` : `${API_BASE_URL}/admin/teachers`;
+                const method = isEdit ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method,
                     headers: {
                         'Authorization': `Bearer ${authToken}`,
                         'Content-Type': 'application/json'
@@ -512,17 +617,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 hideLoading();
 
                 if (!response.ok) {
-                    throw new Error(result.message || 'Failed to create teacher');
+                    throw new Error(result.message || (isEdit ? 'Failed to update teacher' : 'Failed to create teacher'));
                 }
 
-                showTeacherFormStatus('Teacher created successfully!', 'success');
+                showTeacherFormStatus(isEdit ? 'Teacher updated successfully!' : 'Teacher created successfully!', 'success');
                 setTimeout(() => {
                     closeAddTeacherModal();
                     loadTeachers();
-                }, 1500);
+                }, 800);
             } catch (error) {
                 hideLoading();
-                showTeacherFormStatus(error.message || 'Failed to create teacher', 'error');
+                showTeacherFormStatus(error.message || 'Failed to save teacher', 'error');
             }
         });
     }
@@ -612,6 +717,9 @@ function loadBoards() {
             </td>
         </tr>
     `).join('');
+
+    // Update preset dropdown to disable already-present defaults
+    setBoardPresetAvailability();
 }
 
 function showAddBoardModal() {
@@ -631,6 +739,9 @@ function showAddBoardModal() {
     form.reset();
     if (status) status.classList.add('hidden');
     if (nameWrapper) nameWrapper.classList.add('hidden');
+
+    // Disable CBSE/ICSE choices if already present
+    setBoardPresetAvailability();
 
     if (preset) {
         preset.addEventListener('change', () => {
@@ -721,6 +832,32 @@ function deleteBoard(name) {
     loadBoards();
 }
 
+// Disable default board options in the preset dropdown when they already exist
+function setBoardPresetAvailability() {
+    const preset = document.getElementById('boardPreset');
+    if (!preset) return;
+
+    const hasCBSE = boardsList.some(b => b.name === 'CBSE');
+    const hasICSE = boardsList.some(b => b.name === 'ICSE');
+
+    const cbseOption = preset.querySelector('option[value="CBSE"]');
+    const icseOption = preset.querySelector('option[value="ICSE"]');
+
+    if (cbseOption) {
+        cbseOption.disabled = hasCBSE;
+        cbseOption.textContent = hasCBSE ? 'CBSE (already added)' : 'CBSE';
+    }
+
+    if (icseOption) {
+        icseOption.disabled = hasICSE;
+        icseOption.textContent = hasICSE ? 'ICSE (already added)' : 'ICSE';
+    }
+
+    // Default the select back to placeholder so disabled options aren't auto-selected
+    if (preset.value === 'CBSE' && hasCBSE) preset.value = '';
+    if (preset.value === 'ICSE' && hasICSE) preset.value = '';
+}
+
 // Classes (frontend-only management using localStorage)
 function loadClasses() {
     const tbody = document.getElementById('classes-table-body');
@@ -768,6 +905,9 @@ function loadClasses() {
             </td>
         </tr>
     `).join('');
+
+    // Disable base class presets that already exist
+    setClassPresetAvailability();
 }
 
 function showAddClassModal() {
@@ -787,6 +927,9 @@ function showAddClassModal() {
     form.reset();
     if (status) status.classList.add('hidden');
     if (nameWrapper) nameWrapper.classList.add('hidden');
+
+    // Disable base class presets that already exist
+    setClassPresetAvailability();
 
     if (preset) {
         preset.addEventListener('change', () => {
@@ -876,6 +1019,31 @@ function deleteClass(name) {
     loadClasses();
 }
 
+// Disable default class options in the preset dropdown when they already exist
+function setClassPresetAvailability() {
+    const preset = document.getElementById('classPreset');
+    if (!preset) return;
+
+    const has9 = classesList.some(c => c.name === '9th');
+    const has10 = classesList.some(c => c.name === '10th');
+
+    const n9 = preset.querySelector('option[value="9th"]');
+    const n10 = preset.querySelector('option[value="10th"]');
+
+    if (n9) {
+        n9.disabled = has9;
+        n9.textContent = has9 ? '9th (already added)' : '9th';
+    }
+
+    if (n10) {
+        n10.disabled = has10;
+        n10.textContent = has10 ? '10th (already added)' : '10th';
+    }
+
+    if (preset.value === '9th' && has9) preset.value = '';
+    if (preset.value === '10th' && has10) preset.value = '';
+}
+
 function editClass(name) {
     const cls = classesList.find(c => c.name === name && !c.isDefault);
     if (!cls) {
@@ -927,7 +1095,65 @@ function editBoard(name) {
     loadBoards();
 }
 function editTeacher(id) {
-    alert(`Edit teacher: ${id}`);
+    const teacher = (teachersCache || []).find(t => t._id === id) || null;
+    // fallback: try to locate from DOM data?
+    if (!teacher) {
+        alert('Teacher not found');
+        return;
+    }
+
+    const modal = document.getElementById('addTeacherModal');
+    const form = document.getElementById('addTeacherForm');
+    const status = document.getElementById('teacherFormStatus');
+    const title = document.querySelector('#addTeacherModal h3');
+    const submitBtn = document.querySelector('#addTeacherForm button[type="submit"]');
+
+    if (!modal || !form) {
+        alert('Edit form not available');
+        return;
+    }
+
+    // ensure roles loaded
+    if (!subjectsList.length) {
+        fetchSubjectsForRoles().then(() => fillTeacherForm(teacher));
+    } else {
+        fillTeacherForm(teacher);
+    }
+
+    function fillTeacherForm(t) {
+        populateTeacherRoleOptions();
+        document.getElementById('teacherName').value = t.name || '';
+        document.getElementById('teacherEmail').value = t.email || '';
+        document.getElementById('teacherPhone').value = t.phone || '';
+        document.getElementById('teacherRole').value = t.role || '';
+        if (status) status.classList.add('hidden');
+        editingTeacherId = t._id;
+        if (title) title.textContent = 'Edit Teacher';
+        if (submitBtn) submitBtn.innerHTML = `<i class="fas fa-save mr-2"></i>Update Teacher`;
+        modal.classList.remove('hidden');
+    }
+}
+
+async function deleteTeacher(id) {
+    if (!confirm('Are you sure you want to delete this teacher?')) return;
+    try {
+        showLoading();
+        const response = await fetch(`${API_BASE_URL}/admin/teachers/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        const result = await response.json().catch(() => ({}));
+        hideLoading();
+        if (!response.ok) {
+            throw new Error(result.message || 'Failed to delete teacher');
+        }
+        loadTeachers();
+    } catch (err) {
+        hideLoading();
+        alert(err.message || 'Failed to delete teacher');
+    }
 }
 
 // Subjects
@@ -1005,23 +1231,26 @@ async function fetchSubjectsForRoles() {
 }
 
 function populateTeacherRoleOptions() {
-    const roleSelect = document.getElementById('teacherRole');
-    if (!roleSelect) return;
+    const roleSelects = [
+        document.getElementById('teacherRole'),
+        document.getElementById('editTeacherRole')
+    ].filter(Boolean);
+    if (!roleSelects.length) return;
 
-    if (!subjectsList.length) {
-        roleSelect.innerHTML = '<option value="">No subjects available</option>';
-        return;
-    }
+    const emptyHtml = '<option value="">No subjects available</option>';
 
-    const options = subjectsList.map(subject => {
-        const label = subject.subject || 'Unnamed Subject';
-        return `<option value="${subject.subject}">${label}</option>`;
-    }).join('');
+    const options = subjectsList.length
+        ? subjectsList.map(subject => {
+            const label = subject.subject || 'Unnamed Subject';
+            return `<option value="${subject.subject}">${label}</option>`;
+        }).join('')
+        : '';
 
-    roleSelect.innerHTML = `
-        <option value="">Select role</option>
-        ${options}
-    `;
+    roleSelects.forEach(select => {
+        select.innerHTML = subjectsList.length
+            ? `<option value="">Select role</option>${options}`
+            : emptyHtml;
+    });
 }
 
 // Predefined subjects from marketing website (Class 9 & 10, CBSE & ICSE)
@@ -1044,10 +1273,15 @@ const PREDEFINED_SUBJECTS = [
     { id: 'icse-10-mathematics', subject: 'Mathematics', board: 'ICSE', class: '10', price: 6499 }
 ];
 
+// Disable predefined subject options when that subject+board+class already exists
+// Note: subject presets remain selectable even if already added (per request)
+
 function showAddSubjectModal() {
     const modal = document.getElementById('addSubjectModal');
     const form = document.getElementById('addSubjectForm');
     const status = document.getElementById('subjectFormStatus');
+    const title = document.querySelector('#addSubjectModal h3');
+    const submitBtn = document.querySelector('#addSubjectForm button[type="submit"]');
     
     if (!modal || !form) {
         console.error('Modal or form not found');
@@ -1059,16 +1293,28 @@ function showAddSubjectModal() {
     if (status) {
         status.classList.add('hidden');
     }
+
+    // Reset editing state & labels
+    editingSubjectId = null;
+    if (title) title.textContent = 'Add New Subject';
+    if (submitBtn) submitBtn.innerHTML = `<i class="fas fa-save mr-2"></i>Create Subject`;
 }
 
 function closeAddSubjectModal() {
     const modal = document.getElementById('addSubjectModal');
     const form = document.getElementById('addSubjectForm');
     const status = document.getElementById('subjectFormStatus');
+    const title = document.querySelector('#addSubjectModal h3');
+    const submitBtn = document.querySelector('#addSubjectForm button[type="submit"]');
     
     if (modal) modal.classList.add('hidden');
     if (form) form.reset();
     if (status) status.classList.add('hidden');
+
+    // Reset editing state & labels
+    editingSubjectId = null;
+    if (title) title.textContent = 'Add New Subject';
+    if (submitBtn) submitBtn.innerHTML = `<i class="fas fa-save mr-2"></i>Create Subject`;
 }
 
 // Handle subject form submission and modal click-outside
@@ -1092,6 +1338,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const subjectNameInput = document.getElementById('subjectName');
         const subjectBoardSelect = document.getElementById('subjectBoard');
         const subjectClassInput = document.getElementById('subjectClass');
+        const title = document.querySelector('#addSubjectModal h3');
+        const submitBtn = document.querySelector('#addSubjectForm button[type="submit"]');
 
         // Handle mode toggle between existing subjects and creating new
         if (modeRadios && predefinedWrapper && manualFields) {
@@ -1160,8 +1408,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // Submit
             try {
                 showLoading();
-                const response = await fetch(`${API_BASE_URL}/subjects`, {
-                    method: 'POST',
+                const isEdit = !!editingSubjectId;
+                const url = isEdit ? `${API_BASE_URL}/subjects/${editingSubjectId}` : `${API_BASE_URL}/subjects`;
+                const method = isEdit ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method,
                     headers: {
                         'Authorization': `Bearer ${authToken}`,
                         'Content-Type': 'application/json'
@@ -1173,10 +1425,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 hideLoading();
                 
                 if (!response.ok) {
-                    throw new Error(result.message || 'Failed to create subject');
+                    throw new Error(result.message || (isEdit ? 'Failed to update subject' : 'Failed to create subject'));
                 }
                 
-                showSubjectFormStatus('Subject created successfully!', 'success');
+                showSubjectFormStatus(isEdit ? 'Subject updated successfully!' : 'Subject created successfully!', 'success');
                 setTimeout(() => {
                     closeAddSubjectModal();
                     loadSubjects();
@@ -1197,7 +1449,38 @@ function showSubjectFormStatus(message, type) {
 }
 
 function editSubject(id) {
-    alert(`Edit subject: ${id} - Feature coming soon`);
+    const subject = subjectsList.find(s => s._id === id);
+    if (!subject) {
+        alert('Subject not found');
+        return;
+    }
+
+    const modal = document.getElementById('addSubjectModal');
+    const subjectNameInput = document.getElementById('subjectName');
+    const subjectBoardSelect = document.getElementById('subjectBoard');
+    const subjectClassInput = document.getElementById('subjectClass');
+    const predefinedWrapper = document.getElementById('predefinedSubjectWrapper');
+    const manualFields = document.getElementById('manualSubjectFields');
+    const modeNewRadio = document.querySelector('input[name="subjectMode"][value="new"]');
+    const title = document.querySelector('#addSubjectModal h3');
+    const submitBtn = document.querySelector('#addSubjectForm button[type="submit"]');
+
+    editingSubjectId = id;
+
+    // Prefill fields
+    if (subjectNameInput) subjectNameInput.value = subject.subject || '';
+    if (subjectBoardSelect) subjectBoardSelect.value = subject.board || '';
+    if (subjectClassInput) subjectClassInput.value = subject.class || '';
+
+    // Force "new" mode to show manual fields
+    if (modeNewRadio) modeNewRadio.checked = true;
+    if (predefinedWrapper) predefinedWrapper.classList.add('hidden');
+    if (manualFields) manualFields.classList.remove('hidden');
+
+    if (title) title.textContent = 'Edit Subject';
+    if (submitBtn) submitBtn.innerHTML = `<i class="fas fa-save mr-2"></i>Update Subject`;
+
+    if (modal) modal.classList.remove('hidden');
 }
 
 async function deleteSubject(id) {
@@ -1503,12 +1786,12 @@ async function loadLiveClasses() {
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${startDate}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">${priceDisplay}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-3 py-1 rounded-full text-xs ${getStatusColor(liveClass.status)}">${liveClass.status}</span>
+                    <span class="px-3 py-1 rounded-full text-xs ${getStatusColor(liveClass.status)}">${liveClass.status}</span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <button onclick="editLiveClass('${liveClass._id}')" class="text-yellow-600 hover:text-yellow-800 mr-3" title="Edit">
                                 <i class="fas fa-edit"></i>
-                            </button>
+                    </button>
                             <button onclick="deleteLiveClass('${liveClass._id}')" class="text-red-600 hover:text-red-800" title="Delete">
                                 <i class="fas fa-trash"></i>
                             </button>
@@ -1530,6 +1813,9 @@ async function showAddLiveClassModal() {
     const modal = document.getElementById('addLiveClassModal');
     const form = document.getElementById('addLiveClassForm');
     const status = document.getElementById('liveClassFormStatus');
+    const imagePreview = document.getElementById('liveClassImagePreview');
+    const imageFileInput = document.getElementById('liveClassImageFile');
+    const hiddenImageUrl = document.getElementById('liveClassImageUrl');
 
     if (!modal || !form) {
         console.error('Live class modal or form not found');
@@ -1543,15 +1829,41 @@ async function showAddLiveClassModal() {
 
     populateLiveClassDropdowns();
 
+    // Reset image preview
+    if (imagePreview) imagePreview.classList.add('hidden');
+    if (imageFileInput) imageFileInput.value = '';
+    if (hiddenImageUrl) hiddenImageUrl.value = '';
+
     modal.classList.remove('hidden');
     form.reset();
     if (status) status.classList.add('hidden');
+    
+    // Add image preview handler
+    if (imageFileInput) {
+        imageFileInput.onchange = function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewImg = document.getElementById('liveClassImagePreviewImg');
+                    if (previewImg) {
+                        previewImg.src = e.target.result;
+                        document.getElementById('liveClassImagePreview').classList.remove('hidden');
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+    }
 }
 
 function closeAddLiveClassModal() {
     const modal = document.getElementById('addLiveClassModal');
     const form = document.getElementById('addLiveClassForm');
     const status = document.getElementById('liveClassFormStatus');
+    const imagePreview = document.getElementById('liveClassImagePreview');
+    const imageFileInput = document.getElementById('liveClassImageFile');
+    const hiddenImageUrl = document.getElementById('liveClassImageUrl');
 
     if (modal) {
         // Reset edit mode
@@ -1564,6 +1876,12 @@ function closeAddLiveClassModal() {
         if (submitButton) {
             submitButton.innerHTML = '<i class="fas fa-save mr-2"></i>Create Live Class';
         }
+        
+        // Reset image preview
+        if (imagePreview) imagePreview.classList.add('hidden');
+        if (imageFileInput) imageFileInput.value = '';
+        if (hiddenImageUrl) hiddenImageUrl.value = '';
+        
         modal.classList.add('hidden');
     }
     if (form) form.reset();
@@ -1627,56 +1945,106 @@ document.addEventListener('DOMContentLoaded', () => {
             const isEditMode = modal && modal.dataset.editId;
             const editId = isEditMode || null;
 
-            const board = document.getElementById('liveClassBoard')?.value || '';
-            const className = document.getElementById('liveClassClass')?.value || '';
-            const subject = document.getElementById('liveClassSubject')?.value || '';
-            const priceValue = parseFloat(document.getElementById('liveClassPrice')?.value || '0');
-            const discountValue = parseFloat(document.getElementById('liveClassDiscountPrice')?.value || '0');
-            const timeSlot = document.getElementById('liveClassTimeSlot')?.value || '';
-            const startDateStr = document.getElementById('liveClassStartDate')?.value || '';
+            const boardEl = document.getElementById('liveClassBoard');
+            const classEl = document.getElementById('liveClassClass');
+            const subjectEl = document.getElementById('liveClassSubject');
+            const priceEl = document.getElementById('liveClassPrice');
+            const discountEl = document.getElementById('liveClassDiscountPrice');
+            const startTimeEl = document.getElementById('liveClassStartTime');
+            const endTimeEl = document.getElementById('liveClassEndTime');
+            const startDateEl = document.getElementById('liveClassStartDate');
+            const imageFileEl = document.getElementById('liveClassImageFile');
+            const imageUrlEl = document.getElementById('liveClassImageUrl');
+            
+            const board = boardEl ? boardEl.value : '';
+            const className = classEl ? classEl.value : '';
+            const subject = subjectEl ? subjectEl.value : '';
+            const priceValue = parseFloat(priceEl ? priceEl.value : '0');
+            const discountValue = parseFloat(discountEl ? discountEl.value : '0');
+            const startTime = startTimeEl ? startTimeEl.value : '';
+            const endTime = endTimeEl ? endTimeEl.value : '';
+            const startDateStr = startDateEl ? startDateEl.value : '';
             const totalDaysInput = document.getElementById('liveClassTotalDays');
             const totalDaysText = totalDaysInput ? totalDaysInput.value.trim() : '';
+            const imageFile = imageFileEl && imageFileEl.files ? imageFileEl.files[0] : null;
+            const existingImageUrl = imageUrlEl ? imageUrlEl.value.trim() : '';
 
             const dayCheckboxes = Array.from(document.querySelectorAll('#liveClassDays input[type="checkbox"]'));
             const days = dayCheckboxes.filter(cb => cb.checked).map(cb => cb.value);
 
             // Validation
-            if (!board || !className || !subject || !timeSlot || !startDateStr || isNaN(priceValue) || priceValue < 0) {
-                showLiveClassFormStatus('Please fill all required fields and enter a valid price.', 'error');
+            if (!board || !className || !subject || !startTime || !endTime || !startDateStr || isNaN(priceValue) || priceValue < 0) {
+                showLiveClassFormStatus('Please fill all required fields and enter valid start/end times and price.', 'error');
                 return;
             }
             if (!days.length) {
                 showLiveClassFormStatus('Please select at least one day.', 'error');
                 return;
             }
+            // Ensure end time is after start time
+            // startTime / endTime are in HH:MM (24-hour) from <input type="time">
+            const [startH, startM] = startTime.split(':').map(Number);
+            const [endH, endM] = endTime.split(':').map(Number);
+            const startTotal = startH * 60 + startM;
+            const endTotal = endH * 60 + endM;
+            if (endTotal <= startTotal) {
+                showLiveClassFormStatus('End time must be after start time.', 'error');
+                return;
+            }
 
-            // Build scheduledDate and duration (minutes) from timeSlot
-            const [startStr, endStr] = timeSlot.split('-'); // e.g. "16:00-17:30"
-            const scheduledDate = new Date(startDateStr + 'T' + startStr + ':00');
-            const [startH, startM] = startStr.split(':').map(Number);
-            const [endH, endM] = endStr.split(':').map(Number);
-            const durationMinutes = (endH * 60 + endM) - (startH * 60 + startM);
+            const timeSlot = `${startTime}-${endTime}`;
 
-            const liveClassData = {
-                title: `${subject} - Class ${className} (${board})`,
-                course: null, // optional, can be wired later to a Course
-                board,
-                className,
-                subject,
-                teacher: currentUser?._id, // current admin/teacher; adjust if needed
-                scheduledDate,
-                duration: durationMinutes,
-                description: totalDaysText ? `Total duration: ${totalDaysText}` : '',
-                timeSlot,
-                status: 'scheduled',
-                price: priceValue,
-                discountPrice: isNaN(discountValue) || discountValue <= 0 ? undefined : discountValue,
-                totalDurationText: totalDaysText || undefined,
-                days
-            };
+            // Build scheduledDate and duration (minutes) from start/end time
+            const scheduledDate = new Date(startDateStr + 'T' + startTime + ':00');
+            const durationMinutes = endTotal - startTotal;
 
             try {
                 showLoading();
+                
+                // Upload image first if a new file is selected
+                let imageUrl = existingImageUrl;
+                if (imageFile) {
+                    const formData = new FormData();
+                    formData.append('image', imageFile);
+                    
+                    const uploadResponse = await fetch(`${API_BASE_URL}/upload/image`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`
+                        },
+                        body: formData
+                    });
+                    
+                    const ct = uploadResponse.headers.get('content-type') || '';
+                    const uploadResult = ct.includes('application/json')
+                        ? await uploadResponse.json()
+                        : { message: await uploadResponse.text() };
+                    
+                    if (!uploadResponse.ok) {
+                        throw new Error(uploadResult.message || `Failed to upload image (status ${uploadResponse.status})`);
+                    }
+                    imageUrl = uploadResult.data.url;
+                }
+
+                const liveClassData = {
+                    title: `${subject} - Class ${className} (${board})`,
+                    course: null, // optional, can be wired later to a Course
+                    board,
+                    className,
+                    subject,
+                    teacher: currentUser?._id, // current admin/teacher; adjust if needed
+                    scheduledDate,
+                    duration: durationMinutes,
+                    description: totalDaysText ? `Total duration: ${totalDaysText}` : '',
+                    timeSlot,
+                    status: 'scheduled',
+                    price: priceValue,
+                    discountPrice: isNaN(discountValue) || discountValue <= 0 ? undefined : discountValue,
+                    totalDurationText: totalDaysText || undefined,
+                    imageUrl: imageUrl || undefined,
+                    days
+                };
+
                 const url = editId 
                     ? `${API_BASE_URL}/live-classes/${editId}`
                     : `${API_BASE_URL}/live-classes`;
@@ -1740,7 +2108,19 @@ async function editLiveClass(id) {
         document.getElementById('liveClassSubject').value = liveClass.subject || '';
         document.getElementById('liveClassPrice').value = liveClass.price || '';
         document.getElementById('liveClassDiscountPrice').value = liveClass.discountPrice || '';
-        document.getElementById('liveClassTimeSlot').value = liveClass.timeSlot || '';
+        // Populate time inputs from stored slot (HH:MM-HH:MM)
+        if (liveClass.timeSlot && liveClass.timeSlot.includes('-')) {
+            const [start24, end24] = liveClass.timeSlot.split('-');
+            const startInput = document.getElementById('liveClassStartTime');
+            const endInput = document.getElementById('liveClassEndTime');
+            if (startInput) startInput.value = start24;
+            if (endInput) endInput.value = end24;
+        } else {
+            const startInput = document.getElementById('liveClassStartTime');
+            const endInput = document.getElementById('liveClassEndTime');
+            if (startInput) startInput.value = '';
+            if (endInput) endInput.value = '';
+        }
         
         // Format date for input (YYYY-MM-DD)
         if (liveClass.scheduledDate) {
@@ -1757,6 +2137,45 @@ async function editLiveClass(id) {
                 totalDaysValue = liveClass.description.replace('Total duration:', '').trim();
             }
             totalDaysInput.value = totalDaysValue;
+        }
+
+        // Set image preview if exists
+        const imageFileInput = document.getElementById('liveClassImageFile');
+        const imagePreview = document.getElementById('liveClassImagePreview');
+        const imagePreviewImg = document.getElementById('liveClassImagePreviewImg');
+        const hiddenImageUrl = document.getElementById('liveClassImageUrl');
+        
+        if (liveClass.imageUrl) {
+            // Store existing image URL in hidden field
+            if (hiddenImageUrl) {
+                hiddenImageUrl.value = liveClass.imageUrl;
+            }
+            
+            // Show preview
+            if (imagePreview && imagePreviewImg) {
+                imagePreviewImg.src = liveClass.imageUrl;
+                imagePreview.classList.remove('hidden');
+            }
+        } else {
+            if (hiddenImageUrl) hiddenImageUrl.value = '';
+            if (imagePreview) imagePreview.classList.add('hidden');
+        }
+        
+        // Add image preview handler for file input
+        if (imageFileInput) {
+            imageFileInput.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        if (imagePreviewImg) {
+                            imagePreviewImg.src = e.target.result;
+                            if (imagePreview) imagePreview.classList.remove('hidden');
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
         }
 
         // Set days checkboxes

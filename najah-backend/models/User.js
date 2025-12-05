@@ -64,6 +64,24 @@ const userSchema = new mongoose.Schema({
   },
   resetOtpExpire: {
     type: Date
+  },
+  pushSubscription: {
+    type: mongoose.Schema.Types.Mixed, // Store push notification subscription object
+    default: null
+  },
+  notificationPreferences: {
+    email: {
+      type: Boolean,
+      default: true
+    },
+    whatsapp: {
+      type: Boolean,
+      default: true
+    },
+    push: {
+      type: Boolean,
+      default: true
+    }
   }
 }, {
   timestamps: true

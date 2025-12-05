@@ -38,6 +38,10 @@ const liveClassSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  imageUrl: {
+    type: String,
+    trim: true
+  },
   price: {
     type: Number
   },
