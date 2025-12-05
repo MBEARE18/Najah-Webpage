@@ -134,7 +134,6 @@
         }
 
         .card-hover:hover {
-            transform: translateY(-10px);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
 
@@ -448,7 +447,7 @@
                 <!-- Class 9th CBSE -->
                 <div class="mb-16">
                     <h3 class="text-3xl font-bold text-gray-900 mb-8 text-center scroll-animate">Class 9th - CBSE</h3>
-                    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div id="cbse-9-grid" class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <!-- Physics Card -->
                         <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover scroll-animate">
                             <div class="h-48 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
@@ -541,7 +540,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="text-center mt-8">
+                    <div class="text-center mt-16">
                         <button onclick="openEnrollForm()" class="btn-primary text-white px-12 py-4 rounded-full font-bold text-lg">
                             Enroll Now <i class="fas fa-arrow-right ml-2"></i>
                         </button>
@@ -551,7 +550,7 @@
                 <!-- Class 10th CBSE -->
                 <div class="mb-16">
                     <h3 class="text-3xl font-bold text-gray-900 mb-8 text-center scroll-animate">Class 10th - CBSE</h3>
-                    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div id="cbse-10-grid" class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <!-- Physics Card -->
                         <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover scroll-animate">
                             <div class="h-48 bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center">
@@ -644,7 +643,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="text-center mt-8">
+                    <div class="text-center mt-16">
                         <button onclick="openEnrollForm()" class="btn-primary text-white px-12 py-4 rounded-full font-bold text-lg">
                             Enroll Now <i class="fas fa-arrow-right ml-2"></i>
                         </button>
@@ -657,7 +656,7 @@
                 <!-- Class 9th ICSE -->
                 <div class="mb-16">
                     <h3 class="text-3xl font-bold text-gray-900 mb-8 text-center scroll-animate">Class 9th - ICSE</h3>
-                    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div id="icse-9-grid" class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <!-- Physics Card -->
                         <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover scroll-animate">
                             <div class="h-48 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
@@ -750,7 +749,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="text-center mt-8">
+                    <div class="text-center mt-16">
                         <button onclick="openEnrollForm()" class="btn-primary text-white px-12 py-4 rounded-full font-bold text-lg">
                             Enroll Now <i class="fas fa-arrow-right ml-2"></i>
                         </button>
@@ -760,7 +759,7 @@
                 <!-- Class 10th ICSE -->
                 <div class="mb-16">
                     <h3 class="text-3xl font-bold text-gray-900 mb-8 text-center scroll-animate">Class 10th - ICSE</h3>
-                    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div id="icse-10-grid" class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <!-- Physics Card -->
                         <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover scroll-animate">
                             <div class="h-48 bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center">
@@ -853,7 +852,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="text-center mt-8">
+                    <div class="text-center mt-16">
                         <button onclick="openEnrollForm()" class="btn-primary text-white px-12 py-4 rounded-full font-bold text-lg">
                             Enroll Now <i class="fas fa-arrow-right ml-2"></i>
                         </button>
@@ -1154,6 +1153,11 @@
     </button>
 
     <script>
+        // Use relative URL if served from same origin, otherwise use absolute
+        const API_BASE_URL = window.location.port === '5000' || window.location.hostname === 'localhost'
+            ? '/api'
+            : 'http://localhost:5000/api';
+
         // Mobile Menu Toggle
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
@@ -1426,6 +1430,274 @@
                     link.classList.add('text-purple-600');
                 }
             });
+        });
+
+        // ---------- Dynamic Live Classes from Admin ----------
+        let liveClassesLoaded = false; // Prevent duplicate loading
+        
+        function getGridForLiveClass(board, className) {
+            if (!board || !className) {
+                console.warn('Missing board or className:', { board, className });
+                return null;
+            }
+            const b = board.toString().toUpperCase().trim();
+            // Handle "9th", "10th", "9", "10" formats - remove all non-numeric characters except digits
+            let cNorm = className.toString().toLowerCase().trim();
+            // Extract just the number (9, 10, etc.)
+            const classNum = cNorm.replace(/[^0-9]/g, '');
+
+            console.log('Matching grid for:', { originalBoard: board, originalClass: className, normalizedBoard: b, classNum });
+
+            const gridId = 
+                (b === 'CBSE' || b.includes('CBSE')) 
+                    ? (classNum === '9' ? 'cbse-9-grid' : classNum === '10' ? 'cbse-10-grid' : null)
+                    : (b === 'ICSE' || b.includes('ICSE'))
+                        ? (classNum === '9' ? 'icse-9-grid' : classNum === '10' ? 'icse-10-grid' : null)
+                        : null;
+            
+            if (gridId) {
+                const grid = document.getElementById(gridId);
+                if (grid) {
+                    console.log('✓ Found grid:', gridId);
+                    return grid;
+                } else {
+                    console.error('✗ Grid element not found in DOM:', gridId);
+                }
+            } else {
+                console.warn('✗ No matching grid ID for:', { board: b, classNum });
+            }
+            return null;
+        }
+
+        async function loadDynamicLiveClasses() {
+            // Prevent duplicate loading
+            if (liveClassesLoaded) {
+                console.log('⏭️ Live classes already loaded, skipping...');
+                return;
+            }
+            
+            try {
+                console.log('🔄 Loading dynamic live classes from:', `${API_BASE_URL}/live-classes`);
+                const res = await fetch(`${API_BASE_URL}/live-classes`);
+                
+                if (!res.ok) {
+                    console.error('❌ API request failed:', res.status, res.statusText);
+                    return;
+                }
+                
+                const result = await res.json();
+                console.log('📦 Live classes API response:', result);
+
+                if (!result.success || !result.data || !result.data.length) {
+                    console.log('ℹ️ No live classes found or empty response');
+                    liveClassesLoaded = true; // Mark as loaded even if empty
+                    return;
+                }
+
+                console.log(`✅ Found ${result.data.length} live class(es) to display`);
+
+                let addedCount = 0;
+                result.data.forEach((cls, index) => {
+                    const board = cls.board || (cls.course && cls.course.board) || '';
+                    const className = cls.className || (cls.course && cls.course.class) || '';
+                    
+                    console.log(`\n📋 Processing live class ${index + 1}/${result.data.length}:`, {
+                        id: cls._id,
+                        board: board,
+                        className: className,
+                        subject: cls.subject,
+                        title: cls.title
+                    });
+                    
+                    const grid = getGridForLiveClass(board, className);
+                    if (!grid) {
+                        console.warn(`⚠️ Skipping live class ${index + 1} - no matching grid found for board: "${board}", class: "${className}"`);
+                        return;
+                    }
+                    
+                    // Check if this live class card already exists (prevent duplicates)
+                    const existingCard = grid.querySelector(`[data-live-class-id="${cls._id}"]`);
+                    if (existingCard) {
+                        console.log(`⏭️ Live class ${cls._id} already exists in grid, skipping...`);
+                        return;
+                    }
+
+                    const subject = cls.subject || (cls.course && cls.course.name) || 'Subject';
+
+                    // Duration / total days text
+                    const durationText = cls.totalDurationText || (cls.description && cls.description.replace('Total duration:', '').trim()) || 'Duration not specified';
+
+                    // Days
+                    const daysText = (cls.days && cls.days.length) ? cls.days.join(', ') : 'Days not specified';
+
+                    // Time range from timeSlot or scheduledDate/duration
+                    let timeLabel = 'Time not specified';
+                    if (cls.timeSlot) {
+                        const [startStr, endStr] = cls.timeSlot.split('-');
+                        timeLabel = `${formatTime(startStr)} - ${formatTime(endStr)}`;
+                    } else if (cls.scheduledDate && cls.duration) {
+                        const start = new Date(cls.scheduledDate);
+                        const end = new Date(start.getTime() + cls.duration * 60000);
+                        timeLabel = `${formatTimeFromDate(start)} - ${formatTimeFromDate(end)}`;
+                    }
+
+                    // Starting date
+                    const startDateLabel = cls.scheduledDate
+                        ? formatPrettyDate(new Date(cls.scheduledDate))
+                        : 'Date not specified';
+
+                    // Pricing
+                    const price = cls.price || 0;
+                    const discountPrice = cls.discountPrice && cls.discountPrice > 0 && cls.discountPrice < price ? cls.discountPrice : null;
+                    
+                    // Format price display - show discounted price first if available, otherwise show regular price
+                    let priceDisplay = '';
+                    if (price > 0) {
+                        if (discountPrice && discountPrice > 0 && discountPrice < price) {
+                            // Show discounted price (blue, large) and original price (gray, crossed out, small)
+                            priceDisplay = `<span class="text-2xl font-bold text-blue-600">₹${discountPrice.toLocaleString()}</span><span class="text-gray-500 line-through ml-2 text-sm">₹${price.toLocaleString()}</span>`;
+                        } else {
+                            // Show only regular price
+                            priceDisplay = `<span class="text-2xl font-bold text-blue-600">₹${price.toLocaleString()}</span>`;
+                        }
+                    } else {
+                        priceDisplay = '<span class="text-gray-500 text-sm">Price on request</span>';
+                    }
+
+                    // Count existing cards in this grid (including static cards) to determine position
+                    const existingCards = grid.querySelectorAll('.bg-white.rounded-2xl');
+                    const positionInGrid = existingCards.length; // This will be the position of the new card
+                    const delay = (positionInGrid % 4) * 0.1; // small stagger
+                    
+                    // Get gradient color based on position in row (cycles every 4 cards: Blue, Purple, Green, Red)
+                    const gradients = [
+                        'from-blue-400 to-blue-600',    // 1st card in row (position 0, 4, 8...)
+                        'from-purple-400 to-purple-600', // 2nd card in row (position 1, 5, 9...)
+                        'from-green-400 to-green-600',   // 3rd card in row (position 2, 6, 10...)
+                        'from-red-400 to-red-600'        // 4th card in row (position 3, 7, 11...)
+                    ];
+                    const gradient = gradients[positionInGrid % 4];
+
+                    const cardHtml = `
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-lg card-hover scroll-animate" data-live-class-id="${cls._id}" style="animation-delay: ${delay}s;">
+                            <div class="h-48 bg-gradient-to-br ${gradient} flex items-center justify-center">
+                                <img src="https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=400" alt="${subject}" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4">${subject}</h4>
+                                <div class="space-y-2 mb-4">
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-alt mr-2 text-blue-600"></i><span class="font-semibold">Duration:</span> ${durationText}</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-week mr-2 text-blue-600"></i><span class="font-semibold">Days:</span> ${daysText}</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-clock mr-2 text-blue-600"></i><span class="font-semibold">Time:</span> ${timeLabel}</p>
+                                    <p class="text-sm text-gray-600"><i class="fas fa-calendar-check mr-2 text-blue-600"></i><span class="font-semibold">Starting:</span> ${startDateLabel}</p>
+                                </div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        ${priceDisplay}
+                                    </div>
+                                    <input type="checkbox" class="subject-select w-6 h-6 text-blue-600 rounded border-gray-300 focus:ring-blue-500" data-subject="${subject}" data-class="${className.replace(/th|st|nd|rd/gi, '')}" data-board="${board}" data-price="${discountPrice && discountPrice > 0 && discountPrice < price ? discountPrice : price}">
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    if (grid) {
+                        // Check if grid is visible
+                        const gridStyle = window.getComputedStyle(grid);
+                        const gridParent = grid.closest('.board-content');
+                        const parentStyle = gridParent ? window.getComputedStyle(gridParent) : null;
+                        
+                        if (gridStyle.display === 'none' || (parentStyle && parentStyle.display === 'none')) {
+                            console.warn(`⚠️ Grid is hidden: ${board} ${className} - grid display: ${gridStyle.display}, parent display: ${parentStyle ? parentStyle.display : 'N/A'}`);
+                        }
+                        
+                        grid.insertAdjacentHTML('beforeend', cardHtml);
+                        addedCount++;
+                        
+                        // Verify the card was actually added to DOM and is visible
+                        const addedCard = grid.querySelector(`[data-live-class-id="${cls._id}"]`);
+                        if (addedCard) {
+                            const cardStyle = window.getComputedStyle(addedCard);
+                            console.log(`✅ Added live class card #${addedCount} to grid: ${board} ${className} - ${subject}`);
+                            console.log(`   Card visibility: display=${cardStyle.display}, visibility=${cardStyle.visibility}, opacity=${cardStyle.opacity}`);
+                            
+                            // Force visibility just in case
+                            addedCard.style.display = 'block';
+                            addedCard.style.visibility = 'visible';
+                            addedCard.style.opacity = '1';
+                            
+                            // Scroll to first added card to make it visible
+                            if (addedCount === 1) {
+                                setTimeout(() => {
+                                    addedCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                }, 100);
+                            }
+                        } else {
+                            console.error(`❌ Card was not added to DOM: ${board} ${className} - ${subject}`);
+                        }
+                    } else {
+                        console.error(`❌ Grid not found for: ${board} ${className}`);
+                    }
+                });
+                
+                liveClassesLoaded = true; // Mark as loaded
+                console.log(`\n🎉 Finished loading dynamic live classes. Added ${addedCount} out of ${result.data.length} class(es).`);
+            } catch (err) {
+                console.error('❌ Error loading live classes:', err);
+                liveClassesLoaded = true; // Mark as loaded even on error to prevent retry loops
+            }
+        }
+
+        function formatTime(hhmm) {
+            if (!hhmm) return '';
+            const [h, m] = hhmm.split(':').map(Number);
+            const date = new Date();
+            date.setHours(h, m || 0, 0, 0);
+            return formatTimeFromDate(date);
+        }
+
+        function formatTimeFromDate(date) {
+            return date.toLocaleTimeString('en-IN', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+
+        function formatPrettyDate(date) {
+            const day = date.getDate();
+            const month = date.toLocaleString('en-IN', { month: 'long' });
+            const year = date.getFullYear();
+
+            const suffixes = ['th', 'st', 'nd', 'rd'];
+            const v = day % 100;
+            const suffix = (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
+
+            return `${day}${suffix} ${month} ${year}`;
+        }
+
+        // Load dynamic live classes on page load
+        function initLiveClasses() {
+            // Check if grids exist
+            const grids = ['cbse-9-grid', 'cbse-10-grid', 'icse-9-grid', 'icse-10-grid'];
+            const allGridsExist = grids.every(id => document.getElementById(id) !== null);
+            
+            if (allGridsExist) {
+                console.log('All grids found, loading live classes...');
+                loadDynamicLiveClasses();
+            } else {
+                console.log('Waiting for grids to be available...');
+                setTimeout(initLiveClasses, 100);
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            initLiveClasses();
+        });
+        
+        // Also try loading when window is fully loaded
+        window.addEventListener('load', () => {
+            initLiveClasses();
         });
     </script>
 </body>

@@ -40,9 +40,17 @@
                 <i class="fas fa-chalkboard-teacher w-6"></i>
                 <span class="ml-3">Teachers</span>
             </a>
+            <a href="#" onclick="showSection('boards')" class="nav-item flex items-center px-6 py-3 hover:bg-white hover:bg-opacity-10 cursor-pointer" data-section="boards">
+                <i class="fas fa-layer-group w-6"></i>
+                <span class="ml-3">Board</span>
+            </a>
+            <a href="#" onclick="showSection('classes')" class="nav-item flex items-center px-6 py-3 hover:bg-white hover:bg-opacity-10 cursor-pointer" data-section="classes">
+                <i class="fas fa-list-ol w-6"></i>
+                <span class="ml-3">Class</span>
+            </a>
             <a href="#" onclick="showSection('courses')" class="nav-item flex items-center px-6 py-3 hover:bg-white hover:bg-opacity-10 cursor-pointer" data-section="courses">
                 <i class="fas fa-book w-6"></i>
-                <span class="ml-3">Courses</span>
+                <span class="ml-3">Subjects</span>
             </a>
             <a href="#" onclick="showSection('enrollments')" class="nav-item flex items-center px-6 py-3 hover:bg-white hover:bg-opacity-10 cursor-pointer" data-section="enrollments">
                 <i class="fas fa-clipboard-list w-6"></i>
@@ -117,7 +125,7 @@
                                 <p class="text-yellow-200 text-sm">Total Revenue</p>
                                 <h3 id="stat-revenue" class="text-3xl font-bold mt-2">₹0</h3>
                             </div>
-                            <i class="fas fa-rupee-sign text-4xl opacity-50"></i>
+                            <span class="text-4xl opacity-50">₹</span>
                         </div>
                     </div>
                 </div>
@@ -141,22 +149,27 @@
             <!-- Students Section -->
             <div id="students-section" class="section hidden">
                 <div class="bg-white rounded-xl shadow-lg p-6">
-                    <div class="flex justify-between items-center mb-6">
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
                         <h3 class="text-2xl font-bold">Students Management</h3>
-                        <button onclick="refreshStudents()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
-                            <i class="fas fa-sync-alt mr-2"></i>Refresh
-                        </button>
+                        <div class="w-full lg:w-1/3">
+                            <div class="relative">
+                                <input type="text" id="studentsSearch" oninput="filterStudents()" placeholder="Search by name, email or phone" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500">
+                                <i class="fas fa-search text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                            </div>
+                        </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Selected Subjects</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Amount</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Student Name</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone Number</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email Address</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Class</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Board</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">School Name</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                                 </tr>
                             </thead>
@@ -171,9 +184,12 @@
             <!-- Teachers Section -->
             <div id="teachers-section" class="section hidden">
                 <div class="bg-white rounded-xl shadow-lg p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-2xl font-bold">Teachers Management</h3>
-                        <button onclick="showAddTeacherModal()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+                        <div>
+                            <h3 class="text-2xl font-bold">Teachers Management</h3>
+                            <p class="text-sm text-gray-500">Role: Teacher</p>
+                        </div>
+                        <button onclick="showAddTeacherModal()" class="bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700">
                             <i class="fas fa-plus mr-2"></i>Add Teacher
                         </button>
                     </div>
@@ -184,6 +200,7 @@
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                                 </tr>
@@ -196,17 +213,80 @@
                 </div>
             </div>
 
-            <!-- Courses Section -->
+            <!-- Boards Section -->
+            <div id="boards-section" class="section hidden">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-bold">Board Management</h3>
+                        <button onclick="showAddBoardModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-plus mr-2"></i>Add Board
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Board Name</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="boards-table-body" class="divide-y divide-gray-200">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Classes Section -->
+            <div id="classes-section" class="section hidden">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-bold">Class Management</h3>
+                        <button onclick="showAddClassModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-plus mr-2"></i>Add Class
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Class Name</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="classes-table-body" class="divide-y divide-gray-200">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subjects Section -->
             <div id="courses-section" class="section hidden">
                 <div class="bg-white rounded-xl shadow-lg p-6">
                     <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-2xl font-bold">Courses Management</h3>
-                        <button onclick="showAddCourseModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-                            <i class="fas fa-plus mr-2"></i>Add Course
+                        <h3 class="text-2xl font-bold">Subjects Management</h3>
+                        <button onclick="showAddSubjectModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-plus mr-2"></i>Add Subject
                         </button>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="courses-grid">
-                        <!-- Dynamic content -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subject</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="subjects-table-body" class="divide-y divide-gray-200">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -214,23 +294,44 @@
             <!-- Enrollments Section -->
             <div id="enrollments-section" class="section hidden">
                 <div class="bg-white rounded-xl shadow-lg p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-2xl font-bold">Enrollments Management</h3>
-                        <button onclick="refreshEnrollments()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
-                            <i class="fas fa-sync-alt mr-2"></i>Refresh
-                        </button>
+                    <div class="flex flex-col gap-4 mb-6">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-2xl font-bold">Enrollments Management</h3>
+                        </div>
+                        <div class="flex flex-wrap gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Board</label>
+                                <select id="filterBoard" onchange="onEnrollmentFilterChange()" class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                    <option value="">All Boards</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Class</label>
+                                <select id="filterClass" onchange="onEnrollmentFilterChange()" class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                    <option value="">All Classes</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Subject</label>
+                                <select id="filterSubject" onchange="onEnrollmentFilterChange()" class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                    <option value="">All Subjects</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Student</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Course</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subjects</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase border-r border-gray-200">Student</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase border-r border-gray-200">Email</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase border-r border-gray-200">Phone</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase border-r border-gray-200">Board</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase border-r border-gray-200">Class</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase border-r border-gray-200">Subjects</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase border-r border-gray-200">Amount</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase border-r border-gray-200">Status</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="enrollments-table-body" class="divide-y divide-gray-200">
@@ -250,8 +351,23 @@
                             <i class="fas fa-plus mr-2"></i>Add Live Class
                         </button>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="live-classes-grid">
-                        <!-- Dynamic content -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Board / Class</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time / Days</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Starting Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="live-classes-table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -263,6 +379,341 @@
         <div class="bg-white rounded-lg p-8">
             <i class="fas fa-spinner fa-spin text-4xl text-purple-600"></i>
             <p class="mt-4 text-gray-700">Loading...</p>
+        </div>
+    </div>
+
+    <!-- Add Subject Modal -->
+    <div id="addSubjectModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto mx-4">
+            <div class="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
+                <h3 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-book mr-2 text-purple-600"></i>Add New Subject
+                </h3>
+                <button onclick="closeAddSubjectModal()" class="text-gray-400 hover:text-gray-600 text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="addSubjectForm" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Add Mode</label>
+                    <div class="flex flex-wrap gap-4 text-sm">
+                        <label class="inline-flex items-center space-x-2">
+                            <input type="radio" name="subjectMode" value="existing" class="text-purple-600" checked>
+                            <span>Add from existing subjects</span>
+                        </label>
+                        <label class="inline-flex items-center space-x-2">
+                            <input type="radio" name="subjectMode" value="new" class="text-purple-600">
+                            <span>Create new subject</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="predefinedSubjectWrapper">
+                    <label class="block text-gray-700 font-semibold mb-2">Choose from existing website subjects</label>
+                    <select id="predefinedSubject" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500">
+                        <option value="">-- Select a predefined subject --</option>
+                        <option value="cbse-9-physics">CBSE - Class 9 - Physics</option>
+                        <option value="cbse-9-chemistry">CBSE - Class 9 - Chemistry</option>
+                        <option value="cbse-9-biology">CBSE - Class 9 - Biology</option>
+                        <option value="cbse-9-mathematics">CBSE - Class 9 - Mathematics</option>
+                        <option value="cbse-10-physics">CBSE - Class 10 - Physics</option>
+                        <option value="cbse-10-chemistry">CBSE - Class 10 - Chemistry</option>
+                        <option value="cbse-10-biology">CBSE - Class 10 - Biology</option>
+                        <option value="cbse-10-mathematics">CBSE - Class 10 - Mathematics</option>
+                        <option value="icse-9-physics">ICSE - Class 9 - Physics</option>
+                        <option value="icse-9-chemistry">ICSE - Class 9 - Chemistry</option>
+                        <option value="icse-9-biology">ICSE - Class 9 - Biology</option>
+                        <option value="icse-9-mathematics">ICSE - Class 9 - Mathematics</option>
+                        <option value="icse-10-physics">ICSE - Class 10 - Physics</option>
+                        <option value="icse-10-chemistry">ICSE - Class 10 - Chemistry</option>
+                        <option value="icse-10-biology">ICSE - Class 10 - Biology</option>
+                        <option value="icse-10-mathematics">ICSE - Class 10 - Mathematics</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Selecting one will auto-fill subject details from the website. You can still edit any field if needed.</p>
+                </div>
+
+                <div id="manualSubjectFields" class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Subject Name *</label>
+                        <input type="text" id="subjectName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500" placeholder="e.g., Mathematics, Physics, Chemistry" />
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Board *</label>
+                            <select id="subjectBoard" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500">
+                                <option value="">Select Board</option>
+                                <option value="CBSE">CBSE</option>
+                                <option value="ICSE">ICSE</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Class *</label>
+                            <input type="text" id="subjectClass" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500" placeholder="e.g., 10th, 12th" />
+                        </div>
+                    </div>
+                </div>
+
+                <div id="subjectFormStatus" class="hidden"></div>
+
+                <div class="flex space-x-3 pt-4 border-t">
+                    <button type="submit" class="flex-1 bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 font-semibold">
+                        <i class="fas fa-save mr-2"></i>Create Subject
+                    </button>
+                    <button type="button" onclick="closeAddSubjectModal()" class="flex-1 bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 font-semibold">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Teacher Modal -->
+    <div id="addTeacherModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto mx-4">
+            <div class="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
+                <h3 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-chalkboard-teacher mr-2 text-green-600"></i>Add New Teacher
+                </h3>
+                <button onclick="closeAddTeacherModal()" class="text-gray-400 hover:text-gray-600 text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="addTeacherForm" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Teacher Name *</label>
+                    <input type="text" id="teacherName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500" placeholder="Enter full name" />
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Email Address *</label>
+                    <input type="email" id="teacherEmail" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500" placeholder="example@email.com" />
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Phone Number *</label>
+                    <input type="text" id="teacherPhone" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500" placeholder="+91 98765 43210" />
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Role *</label>
+                    <select id="teacherRole" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500">
+                        <option value="">Select role</option>
+                    </select>
+                </div>
+
+                <div id="teacherFormStatus" class="hidden"></div>
+
+                <div class="flex space-x-3 pt-4 border-t">
+                    <button type="submit" class="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-semibold">
+                        <i class="fas fa-save mr-2"></i>Create Teacher
+                    </button>
+                    <button type="button" onclick="closeAddTeacherModal()" class="flex-1 bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 font-semibold">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Board Modal -->
+    <div id="addBoardModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto mx-4">
+            <div class="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
+                <h3 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-layer-group mr-2 text-blue-600"></i>Add Board
+                </h3>
+                <button onclick="closeAddBoardModal()" class="text-gray-400 hover:text-gray-600 text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="addBoardForm" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Select Board *</label>
+                    <select id="boardPreset" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                        <option value="">Choose option</option>
+                        <option value="CBSE">CBSE</option>
+                        <option value="ICSE">ICSE</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div id="boardNameWrapper" class="hidden">
+                    <label class="block text-gray-700 font-semibold mb-2">Board Name *</label>
+                    <input type="text" id="boardName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" placeholder="Enter board name (e.g., State Board)" />
+                </div>
+
+                <div id="boardFormStatus" class="hidden"></div>
+
+                <div class="flex space-x-3 pt-4 border-t">
+                    <button type="submit" class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-semibold">
+                        <i class="fas fa-save mr-2"></i>Add Board
+                    </button>
+                    <button type="button" onclick="closeAddBoardModal()" class="flex-1 bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 font-semibold">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Class Modal -->
+    <div id="addClassModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto mx-4">
+            <div class="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
+                <h3 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-list-ol mr-2 text-blue-600"></i>Add Class
+                </h3>
+                <button onclick="closeAddClassModal()" class="text-gray-400 hover:text-gray-600 text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="addClassForm" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Select Class *</label>
+                    <select id="classPreset" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                        <option value="">Choose option</option>
+                        <option value="9th">9th</option>
+                        <option value="10th">10th</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div id="classNameWrapper" class="hidden">
+                    <label class="block text-gray-700 font-semibold mb-2">Class Name *</label>
+                    <input type="text" id="className" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" placeholder="Enter class name (e.g., 11th, 12th)" />
+                </div>
+
+                <div id="classFormStatus" class="hidden"></div>
+
+                <div class="flex space-x-3 pt-4 border-t">
+                    <button type="submit" class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-semibold">
+                        <i class="fas fa-save mr-2"></i>Add Class
+                    </button>
+                    <button type="button" onclick="closeAddClassModal()" class="flex-1 bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 font-semibold">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Live Class Modal -->
+    <div id="addLiveClassModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-4">
+            <div class="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
+                <h3 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-video mr-2 text-red-600"></i>Add Live Class
+                </h3>
+                <button onclick="closeAddLiveClassModal()" class="text-gray-400 hover:text-gray-600 text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="addLiveClassForm" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Board *</label>
+                    <select id="liveClassBoard" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500">
+                        <option value="">Select Board</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Class *</label>
+                        <select id="liveClassClass" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500">
+                            <option value="">Select Class</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Subject *</label>
+                        <select id="liveClassSubject" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500">
+                            <option value="">Select Subject</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Total Days / Duration</label>
+                    <input type="text" id="liveClassTotalDays" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500" placeholder="e.g., 60 days, 3 months" />
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Price (₹) *</label>
+                    <input type="number" id="liveClassPrice" required min="0" step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500" placeholder="0.00" />
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Discounted Price (₹)</label>
+                    <input type="number" id="liveClassDiscountPrice" min="0" step="0.01" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500" placeholder="0.00" />
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Time Slot *</label>
+                        <select id="liveClassTimeSlot" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500">
+                            <option value="">Select Time Slot</option>
+                            <option value="16:00-17:30">4:00 PM - 5:30 PM</option>
+                            <option value="17:30-19:00">5:30 PM - 7:00 PM</option>
+                            <option value="19:00-20:30">7:00 PM - 8:30 PM</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Starting Date *</label>
+                        <input type="date" id="liveClassStartDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500" />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Days *</label>
+                    <div id="liveClassDays" class="flex flex-wrap gap-2">
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" value="Mon" class="form-checkbox text-red-600">
+                            <span class="ml-1 text-sm">Mon</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" value="Tue" class="form-checkbox text-red-600">
+                            <span class="ml-1 text-sm">Tue</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" value="Wed" class="form-checkbox text-red-600">
+                            <span class="ml-1 text-sm">Wed</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" value="Thu" class="form-checkbox text-red-600">
+                            <span class="ml-1 text-sm">Thu</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" value="Fri" class="form-checkbox text-red-600">
+                            <span class="ml-1 text-sm">Fri</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" value="Sat" class="form-checkbox text-red-600">
+                            <span class="ml-1 text-sm">Sat</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" value="Sun" class="form-checkbox text-red-600">
+                            <span class="ml-1 text-sm">Sun</span>
+                        </label>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Select one or more days for this class.</p>
+                </div>
+
+                <div id="liveClassFormStatus" class="hidden"></div>
+
+                <div class="flex space-x-3 pt-4 border-t">
+                    <button type="submit" class="flex-1 bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 font-semibold">
+                        <i class="fas fa-save mr-2"></i>Create Live Class
+                    </button>
+                    <button type="button" onclick="closeAddLiveClassModal()" class="flex-1 bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 font-semibold">
+                        Cancel
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 

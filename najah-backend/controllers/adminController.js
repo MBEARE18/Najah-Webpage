@@ -99,9 +99,18 @@ exports.getTeachers = async (req, res, next) => {
 // @access  Private/Admin
 exports.createTeacher = async (req, res, next) => {
   try {
+    // Ensure teacher role and a backend-generated password if none is provided
+    const generatedPassword =
+      req.body.password && req.body.password.trim().length >= 6
+        ? req.body.password
+        : Math.random().toString(36).slice(-10);
+
     const teacher = await User.create({
-      ...req.body,
-      role: 'teacher'
+      name: req.body.name,
+      email: req.body.email,
+      phone: req.body.phone,
+      role: 'teacher',
+      password: generatedPassword
     });
 
     res.status(201).json({

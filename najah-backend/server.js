@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const morgan = require('morgan');
 const cors = require('cors');
+const path = require('path');
 const connectDB = require('./config/database');
 const errorHandler = require('./middleware/errorHandler');
 
@@ -28,11 +29,15 @@ if (process.env.NODE_ENV === 'development') {
 // Serve static files for admin dashboard
 app.use(express.static('public'));
 
+// Serve frontend files
+app.use(express.static(path.join(__dirname, '../najah-frontend')));
+
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/public/enroll', require('./routes/publicEnrollments'));
 app.use('/api/students', require('./routes/students'));
 app.use('/api/courses', require('./routes/courses'));
+app.use('/api/subjects', require('./routes/subjects'));
 app.use('/api/enrollments', require('./routes/enrollments'));
 app.use('/api/live-classes', require('./routes/liveClasses'));
 app.use('/api/admin', require('./routes/admin'));

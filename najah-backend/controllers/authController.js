@@ -97,6 +97,48 @@ exports.login = async (req, res, next) => {
 exports.getMe = async (req, res, next) => {
   const user = await User.findById(req.user.id);
 
+  // If user doesn't have subjects but has enrollments, backfill from MarketingEnrollment
+  if ((!user.subjects || user.subjects.length === 0) && user.email) {
+    try {
+      const MarketingEnrollment = require('../models/MarketingEnrollment');
+      const enrollments = await MarketingEnrollment.find({ 
+        email: user.email.toLowerCase() 
+      }).sort('-createdAt');
+      
+      if (enrollments.length > 0) {
+        // Collect all unique subjects from all enrollments
+        const allSubjects = [];
+        const subjectKeys = new Set();
+        
+        enrollments.forEach(enrollment => {
+          if (enrollment.subjects && enrollment.subjects.length > 0) {
+            enrollment.subjects.forEach(s => {
+              const key = `${s.subject}-${s.class || enrollment.class}-${s.board || enrollment.board}`;
+              if (!subjectKeys.has(key)) {
+                subjectKeys.add(key);
+                allSubjects.push({
+                  subject: s.subject,
+                  class: s.class || enrollment.class,
+                  board: s.board || enrollment.board,
+                  price: s.price || 0
+                });
+              }
+            });
+          }
+        });
+        
+        if (allSubjects.length > 0) {
+          user.subjects = allSubjects;
+          await user.save();
+          console.log(`Backfilled ${allSubjects.length} subjects for user ${user.email}`);
+        }
+      }
+    } catch (error) {
+      console.error('Error backfilling subjects:', error);
+      // Continue even if backfill fails
+    }
+  }
+
   res.status(200).json({
     success: true,
     data: user

@@ -43,6 +43,14 @@ const userSchema = new mongoose.Schema({
     enum: ['CBSE', 'ICSE', ''],
     default: ''
   },
+  subjects: [
+    {
+      subject: String,
+      class: String,
+      board: String,
+      price: Number
+    }
+  ],
   isActive: {
     type: Boolean,
     default: true

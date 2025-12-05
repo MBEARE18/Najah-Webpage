@@ -7,6 +7,11 @@ const API_BASE_URL = (() => {
 // State Management
 let currentUser = null;
 let authToken = localStorage.getItem('authToken');
+let studentsData = [];
+let filteredStudents = [];
+let subjectsList = [];
+let boardsList = [];
+let classesList = [];
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
@@ -85,7 +90,9 @@ function showSection(sectionName) {
         'dashboard': 'Dashboard',
         'students': 'Students',
         'teachers': 'Teachers',
-        'courses': 'Courses',
+        'boards': 'Board Management',
+        'classes': 'Class Management',
+        'courses': 'Subjects',
         'enrollments': 'Enrollments',
         'live-classes': 'Live Classes'
     };
@@ -102,8 +109,14 @@ function showSection(sectionName) {
         case 'teachers':
             loadTeachers();
             break;
+        case 'boards':
+            loadBoards();
+            break;
+        case 'classes':
+            loadClasses();
+            break;
         case 'courses':
-            loadCourses();
+            loadSubjects();
             break;
         case 'enrollments':
             loadEnrollments();
@@ -189,30 +202,9 @@ async function loadStudents() {
         if (!response.ok) throw new Error('Failed to load students');
 
         const result = await response.json();
-        const tbody = document.getElementById('students-table-body');
-        
-        tbody.innerHTML = result.data.map(student => `
-            <tr>
-                <td class="px-4 py-3 whitespace-nowrap">${student.name}</td>
-                <td class="px-4 py-3 whitespace-nowrap">${student.email}</td>
-                <td class="px-4 py-3 whitespace-nowrap">${student.phone || 'N/A'}</td>
-                <td class="px-4 py-3 whitespace-nowrap">${student.class || 'N/A'}</td>
-                <td class="px-4 py-3 whitespace-nowrap">${student.board || 'N/A'}</td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                    <span class="px-3 py-1 rounded-full text-xs ${student.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
-                        ${student.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                </td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                    <button onclick="viewStudent('${student._id}')" class="text-blue-600 hover:text-blue-800 mr-2">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    <button onclick="toggleStudentStatus('${student._id}', ${student.isActive})" class="text-yellow-600 hover:text-yellow-800">
-                        <i class="fas fa-${student.isActive ? 'ban' : 'check'}"></i>
-                    </button>
-                </td>
-            </tr>
-        `).join('');
+        studentsData = result.data || [];
+        filteredStudents = studentsData;
+        renderStudentsTable();
 
         hideLoading();
     } catch (error) {
@@ -222,8 +214,75 @@ async function loadStudents() {
     }
 }
 
+function renderStudentsTable() {
+        const tbody = document.getElementById('students-table-body');
+    if (!tbody) return;
+
+    if (filteredStudents.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9" class="px-4 py-6 text-center text-gray-500">
+                    <div class="flex flex-col items-center space-y-2">
+                        <i class="fas fa-user-graduate text-3xl text-gray-300"></i>
+                        <p>No students found</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = filteredStudents.map(student => {
+            const subjects = Array.isArray(student.subjects) ? student.subjects : [];
+            const selectedSubjects = subjects.length
+                ? subjects.map(s => s.subject).filter(Boolean).join(', ')
+                : 'N/A';
+            const totalAmount = subjects.reduce((sum, subj) => sum + (subj.price || 0), 0);
+
+            return `
+            <tr>
+                    <td class="px-4 py-3">${selectedSubjects}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">₹${totalAmount.toLocaleString()}</td>
+                <td class="px-4 py-3 whitespace-nowrap">${student.name}</td>
+                <td class="px-4 py-3 whitespace-nowrap">${student.phone || 'N/A'}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">${student.email}</td>
+                <td class="px-4 py-3 whitespace-nowrap">${student.class || 'N/A'}</td>
+                <td class="px-4 py-3 whitespace-nowrap">${student.board || 'N/A'}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">${student.schoolName || 'N/A'}</td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                        <button onclick="editStudent('${student._id}')" class="text-yellow-600 hover:text-yellow-800 mr-3">
+                            <i class="fas fa-edit"></i>
+                    </button>
+                        <button onclick="deleteStudent('${student._id}')" class="text-red-600 hover:text-red-800">
+                            <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            `;
+    }).join('');
+}
+
 function refreshStudents() {
     loadStudents();
+}
+
+function filterStudents() {
+    const searchInput = document.getElementById('studentsSearch');
+    if (!searchInput) return;
+
+    const query = searchInput.value.trim().toLowerCase();
+    if (!query) {
+        filteredStudents = studentsData;
+    } else {
+        filteredStudents = studentsData.filter(student => {
+            const name = (student.name || '').toLowerCase();
+            const email = (student.email || '').toLowerCase();
+            const phone = (student.phone || '').toLowerCase();
+            return name.includes(query) || email.includes(query) || phone.includes(query);
+        });
+    }
+
+    renderStudentsTable();
 }
 
 async function toggleStudentStatus(id, currentStatus) {
@@ -249,6 +308,88 @@ function viewStudent(id) {
     alert(`View student details for ID: ${id}`);
 }
 
+function editStudent(id) {
+    const student = studentsData.find(s => s._id === id);
+    if (!student) {
+        alert('Student not found');
+        return;
+    }
+
+    const name = prompt('Student Name', student.name || '');
+    if (name === null) return;
+
+    const email = prompt('Email Address', student.email || '');
+    if (email === null) return;
+
+    const phone = prompt('Phone Number', student.phone || '');
+    if (phone === null) return;
+
+    const studentClass = prompt('Class', student.class || '');
+    if (studentClass === null) return;
+
+    const board = prompt('Board (CBSE/ICSE)', student.board || '');
+    if (board === null) return;
+
+    const schoolName = prompt('School Name', student.schoolName || '');
+    if (schoolName === null) return;
+
+    fetch(`${API_BASE_URL}/students/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name: name.trim(),
+            email: email.trim(),
+            phone: phone.trim(),
+            class: studentClass.trim(),
+            board: board.trim().toUpperCase(),
+            schoolName: schoolName.trim()
+        })
+    })
+    .then(response => {
+        if (response.ok) {
+            loadStudents();
+        } else {
+            return response.json().then(data => {
+                throw new Error(data.message || 'Failed to update student');
+            });
+        }
+    })
+    .catch(error => {
+        alert(error.message);
+    });
+}
+
+function deleteStudent(id) {
+    if (!confirm('Are you sure you want to delete this student?')) {
+        return;
+    }
+
+    showLoading();
+    fetch(`${API_BASE_URL}/students/${id}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${authToken}`
+        }
+    })
+    .then(response => {
+        hideLoading();
+        if (response.ok) {
+            loadStudents();
+        } else {
+            return response.json().then(data => {
+                throw new Error(data.message || 'Failed to delete student');
+            });
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        alert(error.message);
+    });
+}
+
 // Teachers
 async function loadTeachers() {
     try {
@@ -269,6 +410,7 @@ async function loadTeachers() {
                 <td class="px-4 py-3 whitespace-nowrap">${teacher.name}</td>
                 <td class="px-4 py-3 whitespace-nowrap">${teacher.email}</td>
                 <td class="px-4 py-3 whitespace-nowrap">${teacher.phone || 'N/A'}</td>
+                <td class="px-4 py-3 whitespace-nowrap">${teacher.role || 'Teacher'}</td>
                 <td class="px-4 py-3 whitespace-nowrap">
                     <span class="px-3 py-1 rounded-full text-xs ${teacher.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
                         ${teacher.isActive ? 'Active' : 'Inactive'}
@@ -291,18 +433,112 @@ async function loadTeachers() {
 }
 
 function showAddTeacherModal() {
-    const name = prompt('Enter teacher name:');
-    const email = prompt('Enter teacher email:');
-    const password = prompt('Enter teacher password:');
-    const phone = prompt('Enter teacher phone (optional):');
+    const modal = document.getElementById('addTeacherModal');
+    const form = document.getElementById('addTeacherForm');
+    const status = document.getElementById('teacherFormStatus');
 
-    if (name && email && password) {
-        createTeacher({ name, email, password, phone });
+    if (!modal || !form) {
+        console.error('Teacher modal or form not found');
+        return;
     }
+
+    const openModal = () => {
+        populateTeacherRoleOptions();
+        modal.classList.remove('hidden');
+        form.reset();
+        if (status) status.classList.add('hidden');
+    };
+
+    if (!subjectsList.length) {
+        fetchSubjectsForRoles().then(openModal);
+    } else {
+        openModal();
+    }
+}
+
+function closeAddTeacherModal() {
+    const modal = document.getElementById('addTeacherModal');
+    const form = document.getElementById('addTeacherForm');
+    const status = document.getElementById('teacherFormStatus');
+
+    if (modal) modal.classList.add('hidden');
+    if (form) form.reset();
+    if (status) status.classList.add('hidden');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const addTeacherForm = document.getElementById('addTeacherForm');
+    const teacherModal = document.getElementById('addTeacherModal');
+
+    if (teacherModal) {
+        teacherModal.addEventListener('click', function(e) {
+            if (e.target === teacherModal) {
+                closeAddTeacherModal();
+            }
+        });
+    }
+
+    if (addTeacherForm) {
+        addTeacherForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const statusDiv = document.getElementById('teacherFormStatus');
+            statusDiv.classList.add('hidden');
+
+            const teacherData = {
+                name: document.getElementById('teacherName').value.trim(),
+                email: document.getElementById('teacherEmail').value.trim(),
+                phone: document.getElementById('teacherPhone').value.trim(),
+                role: document.getElementById('teacherRole').value || 'teacher'
+            };
+
+            if (!teacherData.name || !teacherData.email || !teacherData.phone || !teacherData.role) {
+                showTeacherFormStatus('Please fill all required fields (Name, Email, Phone, Role)', 'error');
+                return;
+            }
+
+            try {
+                showLoading();
+                const response = await fetch(`${API_BASE_URL}/admin/teachers`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(teacherData)
+                });
+
+                const result = await response.json();
+                hideLoading();
+
+                if (!response.ok) {
+                    throw new Error(result.message || 'Failed to create teacher');
+                }
+
+                showTeacherFormStatus('Teacher created successfully!', 'success');
+                setTimeout(() => {
+                    closeAddTeacherModal();
+                    loadTeachers();
+                }, 1500);
+            } catch (error) {
+                hideLoading();
+                showTeacherFormStatus(error.message || 'Failed to create teacher', 'error');
+            }
+        });
+    }
+});
+
+function showTeacherFormStatus(message, type) {
+    const statusDiv = document.getElementById('teacherFormStatus');
+    if (!statusDiv) return;
+    statusDiv.className = `p-4 rounded-lg ${type === 'error' ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-green-100 text-green-700 border border-green-200'}`;
+    statusDiv.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'} mr-2"></i>${message}`;
+    statusDiv.classList.remove('hidden');
 }
 
 async function createTeacher(data) {
     try {
+        showLoading();
         const response = await fetch(`${API_BASE_URL}/admin/teachers`, {
             method: 'POST',
             headers: {
@@ -312,71 +548,696 @@ async function createTeacher(data) {
             body: JSON.stringify(data)
         });
 
-        if (response.ok) {
+        const result = await response.json();
+        hideLoading();
+
+        if (!response.ok) {
+            throw new Error(result.message || 'Failed to create teacher');
+        }
+
+        closeAddTeacherModal();
             loadTeachers();
             alert('Teacher created successfully');
-        } else {
-            const error = await response.json();
-            alert(error.message || 'Failed to create teacher');
-        }
     } catch (error) {
+        hideLoading();
         console.error('Error creating teacher:', error);
         alert('Failed to create teacher');
     }
 }
 
+// Boards (frontend-only management using localStorage)
+function loadBoards() {
+    const tbody = document.getElementById('boards-table-body');
+    if (!tbody) return;
+
+    // Load from localStorage; always ensure CBSE and ICSE exist
+    const stored = JSON.parse(localStorage.getItem('adminBoards') || '[]');
+    const base = ['CBSE', 'ICSE'];
+    const merged = Array.from(new Set([...base, ...stored]));
+    boardsList = merged.map(name => ({
+        name,
+        status: 'Active',
+        isDefault: base.includes(name)
+    }));
+
+    if (!boardsList.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="3" class="px-4 py-6 text-center text-gray-500">
+                    <div class="flex flex-col items-center space-y-2">
+                        <i class="fas fa-layer-group text-3xl text-gray-300"></i>
+                        <p>No boards found</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = boardsList.map(board => `
+        <tr>
+            <td class="px-4 py-3 whitespace-nowrap">${board.name}</td>
+            <td class="px-4 py-3 whitespace-nowrap">
+                <span class="px-3 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                    ${board.status}
+                </span>
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap">
+                <button onclick="editBoard('${board.name}')" class="text-yellow-600 hover:text-yellow-800 mr-3">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="deleteBoard('${board.name}')" class="text-red-600 hover:text-red-800">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function showAddBoardModal() {
+    const modal = document.getElementById('addBoardModal');
+    const form = document.getElementById('addBoardForm');
+    const status = document.getElementById('boardFormStatus');
+    const preset = document.getElementById('boardPreset');
+    const nameInput = document.getElementById('boardName');
+    const nameWrapper = document.getElementById('boardNameWrapper');
+
+    if (!modal || !form) {
+        console.error('Board modal or form not found');
+        return;
+    }
+
+    modal.classList.remove('hidden');
+    form.reset();
+    if (status) status.classList.add('hidden');
+    if (nameWrapper) nameWrapper.classList.add('hidden');
+
+    if (preset) {
+        preset.addEventListener('change', () => {
+            if (preset.value === 'other') {
+                nameWrapper.classList.remove('hidden');
+            } else {
+                nameWrapper.classList.add('hidden');
+                if (nameInput) nameInput.value = '';
+            }
+        }, { once: true });
+    }
+}
+
+function closeAddBoardModal() {
+    const modal = document.getElementById('addBoardModal');
+    const form = document.getElementById('addBoardForm');
+    const status = document.getElementById('boardFormStatus');
+    const nameWrapper = document.getElementById('boardNameWrapper');
+
+    if (modal) modal.classList.add('hidden');
+    if (form) form.reset();
+    if (status) status.classList.add('hidden');
+    if (nameWrapper) nameWrapper.classList.add('hidden');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const addBoardForm = document.getElementById('addBoardForm');
+    const boardModal = document.getElementById('addBoardModal');
+
+    if (boardModal) {
+        boardModal.addEventListener('click', function(e) {
+            if (e.target === boardModal) {
+                closeAddBoardModal();
+            }
+        });
+    }
+
+    if (addBoardForm) {
+        addBoardForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const preset = document.getElementById('boardPreset');
+            const nameInput = document.getElementById('boardName');
+            const statusDiv = document.getElementById('boardFormStatus');
+
+            if (statusDiv) statusDiv.classList.add('hidden');
+
+            let boardName = '';
+            if (preset && preset.value && preset.value !== 'other') {
+                boardName = preset.value;
+            } else if (preset && preset.value === 'other' && nameInput) {
+                boardName = nameInput.value.trim();
+            }
+
+            if (!boardName) {
+                showBoardFormStatus('Please select CBSE, ICSE or enter another board name.', 'error');
+                return;
+            }
+
+            // Persist custom boards in localStorage (CBSE/ICSE are always present)
+            const stored = JSON.parse(localStorage.getItem('adminBoards') || '[]');
+            if (!stored.includes(boardName) && boardName !== 'CBSE' && boardName !== 'ICSE') {
+                stored.push(boardName);
+                localStorage.setItem('adminBoards', JSON.stringify(stored));
+            }
+
+            showBoardFormStatus('Board added successfully!', 'success');
+            setTimeout(() => {
+                closeAddBoardModal();
+                loadBoards();
+            }, 800);
+        });
+    }
+});
+
+function showBoardFormStatus(message, type) {
+    const statusDiv = document.getElementById('boardFormStatus');
+    if (!statusDiv) return;
+    statusDiv.className = `p-4 rounded-lg ${type === 'error' ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-green-100 text-green-700 border border-green-200'}`;
+    statusDiv.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'} mr-2"></i>${message}`;
+    statusDiv.classList.remove('hidden');
+}
+
+function deleteBoard(name) {
+    if (!confirm(`Remove custom board "${name}"?`)) return;
+    const stored = JSON.parse(localStorage.getItem('adminBoards') || '[]');
+    const filtered = stored.filter(b => b !== name);
+    localStorage.setItem('adminBoards', JSON.stringify(filtered));
+    loadBoards();
+}
+
+// Classes (frontend-only management using localStorage)
+function loadClasses() {
+    const tbody = document.getElementById('classes-table-body');
+    if (!tbody) return;
+
+    // Load from localStorage; always ensure 9th and 10th exist
+    const stored = JSON.parse(localStorage.getItem('adminClasses') || '[]');
+    const base = ['9th', '10th'];
+    const merged = Array.from(new Set([...base, ...stored]));
+    classesList = merged.map(name => ({
+        name,
+        status: 'Active',
+        isDefault: base.includes(name)
+    }));
+
+    if (!classesList.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="3" class="px-4 py-6 text-center text-gray-500">
+                    <div class="flex flex-col items-center space-y-2">
+                        <i class="fas fa-list-ol text-3xl text-gray-300"></i>
+                        <p>No classes found</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = classesList.map(cls => `
+        <tr>
+            <td class="px-4 py-3 whitespace-nowrap">${cls.name}</td>
+            <td class="px-4 py-3 whitespace-nowrap">
+                <span class="px-3 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                    ${cls.status}
+                </span>
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap">
+                <button onclick="editClass('${cls.name}')" class="text-yellow-600 hover:text-yellow-800 mr-3">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="deleteClass('${cls.name}')" class="text-red-600 hover:text-red-800">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function showAddClassModal() {
+    const modal = document.getElementById('addClassModal');
+    const form = document.getElementById('addClassForm');
+    const status = document.getElementById('classFormStatus');
+    const preset = document.getElementById('classPreset');
+    const nameInput = document.getElementById('className');
+    const nameWrapper = document.getElementById('classNameWrapper');
+
+    if (!modal || !form) {
+        console.error('Class modal or form not found');
+        return;
+    }
+
+    modal.classList.remove('hidden');
+    form.reset();
+    if (status) status.classList.add('hidden');
+    if (nameWrapper) nameWrapper.classList.add('hidden');
+
+    if (preset) {
+        preset.addEventListener('change', () => {
+            if (preset.value === 'other') {
+                nameWrapper.classList.remove('hidden');
+            } else {
+                nameWrapper.classList.add('hidden');
+                if (nameInput) nameInput.value = '';
+            }
+        }, { once: true });
+    }
+}
+
+function closeAddClassModal() {
+    const modal = document.getElementById('addClassModal');
+    const form = document.getElementById('addClassForm');
+    const status = document.getElementById('classFormStatus');
+    const nameWrapper = document.getElementById('classNameWrapper');
+
+    if (modal) modal.classList.add('hidden');
+    if (form) form.reset();
+    if (status) status.classList.add('hidden');
+    if (nameWrapper) nameWrapper.classList.add('hidden');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const addClassForm = document.getElementById('addClassForm');
+    const classModal = document.getElementById('addClassModal');
+
+    if (classModal) {
+        classModal.addEventListener('click', function(e) {
+            if (e.target === classModal) {
+                closeAddClassModal();
+            }
+        });
+    }
+
+    if (addClassForm) {
+        addClassForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const preset = document.getElementById('classPreset');
+            const nameInput = document.getElementById('className');
+            const statusDiv = document.getElementById('classFormStatus');
+
+            if (statusDiv) statusDiv.classList.add('hidden');
+
+            let className = '';
+            if (preset && preset.value && preset.value !== 'other') {
+                className = preset.value;
+            } else if (preset && preset.value === 'other' && nameInput) {
+                className = nameInput.value.trim();
+            }
+
+            if (!className) {
+                showClassFormStatus('Please select 9th, 10th or enter another class name.', 'error');
+                return;
+            }
+
+            const stored = JSON.parse(localStorage.getItem('adminClasses') || '[]');
+            if (!stored.includes(className) && className !== '9th' && className !== '10th') {
+                stored.push(className);
+                localStorage.setItem('adminClasses', JSON.stringify(stored));
+            }
+
+            showClassFormStatus('Class added successfully!', 'success');
+            setTimeout(() => {
+                closeAddClassModal();
+                loadClasses();
+            }, 800);
+        });
+    }
+});
+
+function showClassFormStatus(message, type) {
+    const statusDiv = document.getElementById('classFormStatus');
+    if (!statusDiv) return;
+    statusDiv.className = `p-4 rounded-lg ${type === 'error' ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-green-100 text-green-700 border border-green-200'}`;
+    statusDiv.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'} mr-2"></i>${message}`;
+    statusDiv.classList.remove('hidden');
+}
+
+function deleteClass(name) {
+    if (!confirm(`Remove custom class "${name}"?`)) return;
+    const stored = JSON.parse(localStorage.getItem('adminClasses') || '[]');
+    const filtered = stored.filter(c => c !== name);
+    localStorage.setItem('adminClasses', JSON.stringify(filtered));
+    loadClasses();
+}
+
+function editClass(name) {
+    const cls = classesList.find(c => c.name === name && !c.isDefault);
+    if (!cls) {
+        alert('Only custom classes can be edited.');
+        return;
+    }
+
+    const newName = prompt('Edit class name', cls.name);
+    if (newName === null) return;
+
+    const trimmed = newName.trim();
+    if (!trimmed) {
+        alert('Class name cannot be empty.');
+        return;
+    }
+
+    const stored = JSON.parse(localStorage.getItem('adminClasses') || '[]');
+    const idx = stored.indexOf(name);
+    if (idx !== -1) {
+        stored[idx] = trimmed;
+        localStorage.setItem('adminClasses', JSON.stringify(stored));
+    }
+
+    loadClasses();
+}
+function editBoard(name) {
+    const board = boardsList.find(b => b.name === name && !b.isDefault);
+    if (!board) {
+        alert('Only custom boards can be edited.');
+        return;
+    }
+
+    const newName = prompt('Edit board name', board.name);
+    if (newName === null) return;
+
+    const trimmed = newName.trim();
+    if (!trimmed) {
+        alert('Board name cannot be empty.');
+        return;
+    }
+
+    const stored = JSON.parse(localStorage.getItem('adminBoards') || '[]');
+    const idx = stored.indexOf(name);
+    if (idx !== -1) {
+        stored[idx] = trimmed;
+        localStorage.setItem('adminBoards', JSON.stringify(stored));
+    }
+
+    loadBoards();
+}
 function editTeacher(id) {
     alert(`Edit teacher: ${id}`);
 }
 
-// Courses
-async function loadCourses() {
+// Subjects
+async function loadSubjects() {
     try {
         showLoading();
-        const response = await fetch(`${API_BASE_URL}/courses`);
+        const response = await fetch(`${API_BASE_URL}/subjects`);
 
-        if (!response.ok) throw new Error('Failed to load courses');
+        if (!response.ok) throw new Error('Failed to load subjects');
 
         const result = await response.json();
-        const grid = document.getElementById('courses-grid');
+        subjectsList = result.data || [];
+        const tbody = document.getElementById('subjects-table-body');
         
-        grid.innerHTML = result.data.map(course => `
-            <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition">
-                <h3 class="text-xl font-bold mb-2">${course.name}</h3>
-                <p class="text-gray-600 mb-2">${course.board} - Class ${course.class}</p>
-                <p class="text-sm text-gray-500 mb-4">${course.subjects.length} subjects</p>
-                <div class="flex space-x-2">
-                    <button onclick="viewCourse('${course._id}')" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                        View
-                    </button>
-                    <button onclick="editCourse('${course._id}')" class="flex-1 bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700">
-                        Edit
-                    </button>
-                </div>
-            </div>
-        `).join('');
+        if (!tbody) {
+            hideLoading();
+            return;
+        }
 
+        if (subjectsList.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="3" class="px-4 py-6 text-center text-gray-500">
+                        <div class="flex flex-col items-center space-y-2">
+                            <i class="fas fa-book-open text-3xl text-gray-300"></i>
+                            <p>No subjects found</p>
+                </div>
+                    </td>
+                </tr>
+            `;
+        } else {
+            tbody.innerHTML = subjectsList.map(subject => `
+                <tr>
+                    <td class="px-4 py-3 whitespace-nowrap">${subject.subject}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="px-3 py-1 rounded-full text-xs ${subject.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                            ${subject.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <button onclick="editSubject('${subject._id}')" class="text-yellow-600 hover:text-yellow-800 mr-3">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteSubject('${subject._id}')" class="text-red-600 hover:text-red-800">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        populateTeacherRoleOptions();
         hideLoading();
     } catch (error) {
-        console.error('Courses error:', error);
+        console.error('Subjects error:', error);
         hideLoading();
-        alert('Failed to load courses');
+        alert('Failed to load subjects');
     }
 }
 
-function showAddCourseModal() {
-    alert('Add course feature - implement modal form');
+async function fetchSubjectsForRoles() {
+    try {
+        showLoading();
+        const response = await fetch(`${API_BASE_URL}/subjects`);
+        if (!response.ok) throw new Error('Failed to load subjects');
+        const result = await response.json();
+        subjectsList = result.data || [];
+        populateTeacherRoleOptions();
+        hideLoading();
+    } catch (error) {
+        hideLoading();
+        console.error('Subjects fetch error:', error);
+        alert('Please create a subject before assigning teacher roles.');
+    }
 }
 
-function viewCourse(id) {
-    alert(`View course: ${id}`);
+function populateTeacherRoleOptions() {
+    const roleSelect = document.getElementById('teacherRole');
+    if (!roleSelect) return;
+
+    if (!subjectsList.length) {
+        roleSelect.innerHTML = '<option value="">No subjects available</option>';
+        return;
+    }
+
+    const options = subjectsList.map(subject => {
+        const label = subject.subject || 'Unnamed Subject';
+        return `<option value="${subject.subject}">${label}</option>`;
+    }).join('');
+
+    roleSelect.innerHTML = `
+        <option value="">Select role</option>
+        ${options}
+    `;
 }
 
-function editCourse(id) {
-    alert(`Edit course: ${id}`);
+// Predefined subjects from marketing website (Class 9 & 10, CBSE & ICSE)
+const PREDEFINED_SUBJECTS = [
+    { id: 'cbse-9-physics', subject: 'Physics', board: 'CBSE', class: '9', price: 4999 },
+    { id: 'cbse-9-chemistry', subject: 'Chemistry', board: 'CBSE', class: '9', price: 4999 },
+    { id: 'cbse-9-biology', subject: 'Biology', board: 'CBSE', class: '9', price: 4999 },
+    { id: 'cbse-9-mathematics', subject: 'Mathematics', board: 'CBSE', class: '9', price: 4999 },
+    { id: 'cbse-10-physics', subject: 'Physics', board: 'CBSE', class: '10', price: 5999 },
+    { id: 'cbse-10-chemistry', subject: 'Chemistry', board: 'CBSE', class: '10', price: 5999 },
+    { id: 'cbse-10-biology', subject: 'Biology', board: 'CBSE', class: '10', price: 5999 },
+    { id: 'cbse-10-mathematics', subject: 'Mathematics', board: 'CBSE', class: '10', price: 5999 },
+    { id: 'icse-9-physics', subject: 'Physics', board: 'ICSE', class: '9', price: 5499 },
+    { id: 'icse-9-chemistry', subject: 'Chemistry', board: 'ICSE', class: '9', price: 5499 },
+    { id: 'icse-9-biology', subject: 'Biology', board: 'ICSE', class: '9', price: 5499 },
+    { id: 'icse-9-mathematics', subject: 'Mathematics', board: 'ICSE', class: '9', price: 5499 },
+    { id: 'icse-10-physics', subject: 'Physics', board: 'ICSE', class: '10', price: 6499 },
+    { id: 'icse-10-chemistry', subject: 'Chemistry', board: 'ICSE', class: '10', price: 6499 },
+    { id: 'icse-10-biology', subject: 'Biology', board: 'ICSE', class: '10', price: 6499 },
+    { id: 'icse-10-mathematics', subject: 'Mathematics', board: 'ICSE', class: '10', price: 6499 }
+];
+
+function showAddSubjectModal() {
+    const modal = document.getElementById('addSubjectModal');
+    const form = document.getElementById('addSubjectForm');
+    const status = document.getElementById('subjectFormStatus');
+    
+    if (!modal || !form) {
+        console.error('Modal or form not found');
+        return;
+    }
+    
+    modal.classList.remove('hidden');
+    form.reset();
+    if (status) {
+        status.classList.add('hidden');
+    }
+}
+
+function closeAddSubjectModal() {
+    const modal = document.getElementById('addSubjectModal');
+    const form = document.getElementById('addSubjectForm');
+    const status = document.getElementById('subjectFormStatus');
+    
+    if (modal) modal.classList.add('hidden');
+    if (form) form.reset();
+    if (status) status.classList.add('hidden');
+}
+
+// Handle subject form submission and modal click-outside
+document.addEventListener('DOMContentLoaded', () => {
+    // Close modal when clicking outside
+    const addSubjectModal = document.getElementById('addSubjectModal');
+    if (addSubjectModal) {
+        addSubjectModal.addEventListener('click', function(e) {
+            if (e.target === addSubjectModal) {
+                closeAddSubjectModal();
+            }
+        });
+    }
+    
+    const addSubjectForm = document.getElementById('addSubjectForm');
+    if (addSubjectForm) {
+        const predefinedSelect = document.getElementById('predefinedSubject');
+        const predefinedWrapper = document.getElementById('predefinedSubjectWrapper');
+        const manualFields = document.getElementById('manualSubjectFields');
+        const modeRadios = document.querySelectorAll('input[name="subjectMode"]');
+        const subjectNameInput = document.getElementById('subjectName');
+        const subjectBoardSelect = document.getElementById('subjectBoard');
+        const subjectClassInput = document.getElementById('subjectClass');
+
+        // Handle mode toggle between existing subjects and creating new
+        if (modeRadios && predefinedWrapper && manualFields) {
+            const applyMode = () => {
+                const mode = document.querySelector('input[name="subjectMode"]:checked')?.value || 'existing';
+                if (mode === 'existing') {
+                    predefinedWrapper.classList.remove('hidden');
+                    if (manualFields) manualFields.classList.add('hidden');
+                } else {
+                    predefinedWrapper.classList.add('hidden');
+                    if (manualFields) manualFields.classList.remove('hidden');
+                    if (predefinedSelect) {
+                        predefinedSelect.value = '';
+                    }
+                    // Clear any existing values when switching to new
+                    if (subjectNameInput) subjectNameInput.value = '';
+                    if (subjectBoardSelect) subjectBoardSelect.value = '';
+                    if (subjectClassInput) subjectClassInput.value = '';
+                }
+            };
+
+            modeRadios.forEach(radio => {
+                radio.addEventListener('change', applyMode);
+            });
+
+            // Apply initial mode on load
+            applyMode();
+        }
+
+        if (predefinedSelect) {
+            predefinedSelect.addEventListener('change', () => {
+                const selectedId = predefinedSelect.value;
+                const preset = PREDEFINED_SUBJECTS.find(p => p.id === selectedId);
+                if (preset) {
+                    if (subjectNameInput) subjectNameInput.value = preset.subject;
+                    if (subjectBoardSelect) subjectBoardSelect.value = preset.board;
+                    if (subjectClassInput) subjectClassInput.value = preset.class;
+                }
+            });
+        }
+
+        addSubjectForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const statusDiv = document.getElementById('subjectFormStatus');
+            statusDiv.classList.add('hidden');
+            
+            // Collect form data
+            const subjectData = {
+                subject: subjectNameInput ? subjectNameInput.value.trim() : '',
+                board: subjectBoardSelect ? subjectBoardSelect.value : '',
+                class: subjectClassInput ? subjectClassInput.value.trim() : '',
+                price: 0,
+                duration: '',
+                description: ''
+            };
+            
+            // Validate
+            if (!subjectData.subject || !subjectData.board || !subjectData.class) {
+                showSubjectFormStatus('Please fill all required fields (Subject Name, Board, Class)', 'error');
+                return;
+            }
+            
+            // Price, duration, description are optional in this simplified form
+            
+            // Submit
+            try {
+                showLoading();
+                const response = await fetch(`${API_BASE_URL}/subjects`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(subjectData)
+                });
+                
+                const result = await response.json();
+                hideLoading();
+                
+                if (!response.ok) {
+                    throw new Error(result.message || 'Failed to create subject');
+                }
+                
+                showSubjectFormStatus('Subject created successfully!', 'success');
+                setTimeout(() => {
+                    closeAddSubjectModal();
+                    loadSubjects();
+                }, 1500);
+            } catch (error) {
+                hideLoading();
+                showSubjectFormStatus(error.message || 'Failed to create subject', 'error');
+            }
+        });
+    }
+});
+
+function showSubjectFormStatus(message, type) {
+    const statusDiv = document.getElementById('subjectFormStatus');
+    statusDiv.className = `p-4 rounded-lg ${type === 'error' ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-green-100 text-green-700 border border-green-200'}`;
+    statusDiv.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'} mr-2"></i>${message}`;
+    statusDiv.classList.remove('hidden');
+}
+
+function editSubject(id) {
+    alert(`Edit subject: ${id} - Feature coming soon`);
+}
+
+async function deleteSubject(id) {
+    if (!confirm('Are you sure you want to delete this subject?')) {
+        return;
+    }
+    
+    try {
+        showLoading();
+        const response = await fetch(`${API_BASE_URL}/subjects/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        const result = await response.json();
+        hideLoading();
+        
+        if (!response.ok) {
+            throw new Error(result.message || 'Failed to delete subject');
+        }
+        
+        alert('Subject deleted successfully!');
+        loadSubjects();
+    } catch (error) {
+        hideLoading();
+        alert(error.message || 'Failed to delete subject');
+    }
 }
 
 // Enrollments
+let allEnrollments = [];
+let allMarketingEnrollments = [];
+let enrollmentFilters = {
+    board: '',
+    class: '',
+    subject: ''
+};
+
 async function loadEnrollments() {
     try {
         showLoading();
@@ -401,60 +1262,12 @@ async function loadEnrollments() {
         const enrollmentsResult = await enrollmentsResponse.json();
         const marketingResult = await marketingResponse.json();
         
-        const tbody = document.getElementById('enrollments-table-body');
-        
-        // Combine regular enrollments
-        let html = enrollmentsResult.data.map(enrollment => `
-            <tr>
-                <td class="px-4 py-3 whitespace-nowrap">${enrollment.student?.name || 'N/A'}</td>
-                <td class="px-4 py-3 whitespace-nowrap">${enrollment.course?.name || 'N/A'} - ${enrollment.course?.class || 'N/A'}</td>
-                <td class="px-4 py-3">${Array.isArray(enrollment.subjects) ? enrollment.subjects.join(', ') : 'N/A'}</td>
-                <td class="px-4 py-3 whitespace-nowrap">₹${enrollment.amount || 0}</td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                    <span class="px-3 py-1 rounded-full text-xs ${getStatusColor(enrollment.status || 'pending')}">${enrollment.status || 'pending'}</span>
-                </td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                    <span class="px-3 py-1 rounded-full text-xs ${getPaymentStatusColor(enrollment.paymentStatus || 'pending')}">${enrollment.paymentStatus || 'pending'}</span>
-                </td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                    <button onclick="viewEnrollment('${enrollment._id}')" class="text-blue-600 hover:text-blue-800">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </td>
-            </tr>
-        `).join('');
+        // Cache data for filtering
+        allEnrollments = enrollmentsResult.data || [];
+        allMarketingEnrollments = marketingResult.data || [];
 
-        // Add marketing enrollments (from frontend form)
-        html += marketingResult.data.map(enrollment => `
-            <tr class="bg-yellow-50">
-                <td class="px-4 py-3 whitespace-nowrap">
-                    <div class="flex items-center">
-                        <span class="font-semibold">${enrollment.studentName}</span>
-                        <span class="ml-2 px-2 py-1 rounded text-xs bg-yellow-200 text-yellow-800">New</span>
-                    </div>
-                </td>
-                <td class="px-4 py-3 whitespace-nowrap">Marketing - Class ${enrollment.class}</td>
-                <td class="px-4 py-3">${enrollment.subjects.map(s => s.subject).join(', ')}</td>
-                <td class="px-4 py-3 whitespace-nowrap">₹${enrollment.totalAmount || 0}</td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                    <span class="px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">Pending</span>
-                </td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                    <span class="px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">Pending</span>
-                </td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                    <div class="flex flex-col space-y-1">
-                        <button onclick="viewMarketingEnrollment('${enrollment._id}')" class="text-blue-600 hover:text-blue-800" title="View Details">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <span class="text-xs text-gray-500">${enrollment.email}</span>
-                        <span class="text-xs text-gray-500">${enrollment.phone}</span>
-                    </div>
-                </td>
-            </tr>
-        `).join('');
-
-        tbody.innerHTML = html || '<tr><td colspan="7" class="px-4 py-3 text-center text-gray-500">No enrollments found</td></tr>';
+        populateEnrollmentFilterOptions();
+        renderEnrollmentsTable();
 
         hideLoading();
     } catch (error) {
@@ -466,6 +1279,138 @@ async function loadEnrollments() {
 
 function refreshEnrollments() {
     loadEnrollments();
+}
+
+function onEnrollmentFilterChange() {
+    const boardSelect = document.getElementById('filterBoard');
+    const classSelect = document.getElementById('filterClass');
+    const subjectSelect = document.getElementById('filterSubject');
+
+    enrollmentFilters = {
+        board: boardSelect ? boardSelect.value : '',
+        class: classSelect ? classSelect.value : '',
+        subject: subjectSelect ? subjectSelect.value : ''
+    };
+
+    renderEnrollmentsTable();
+}
+
+function populateEnrollmentFilterOptions() {
+    const boards = new Set();
+    const classes = new Set();
+    const subjects = new Set();
+
+    allEnrollments.forEach(enrollment => {
+        if (enrollment.student?.board) boards.add(enrollment.student.board);
+        if (enrollment.course?.class) classes.add(enrollment.course.class);
+        if (Array.isArray(enrollment.subjects)) {
+            enrollment.subjects.forEach(s => subjects.add(s));
+        }
+    });
+
+    allMarketingEnrollments.forEach(enrollment => {
+        if (enrollment.board) boards.add(enrollment.board);
+        if (enrollment.class) classes.add(enrollment.class);
+        if (Array.isArray(enrollment.subjects)) {
+            enrollment.subjects.forEach(s => {
+                if (s.subject) subjects.add(s.subject);
+            });
+        }
+    });
+
+    const boardSelect = document.getElementById('filterBoard');
+    const classSelect = document.getElementById('filterClass');
+    const subjectSelect = document.getElementById('filterSubject');
+
+    if (boardSelect) {
+        const current = boardSelect.value;
+        boardSelect.innerHTML = '<option value="">All Boards</option>' +
+            Array.from(boards).sort().map(b => `<option value="${b}">${b}</option>`).join('');
+        boardSelect.value = current;
+    }
+
+    if (classSelect) {
+        const current = classSelect.value;
+        classSelect.innerHTML = '<option value="">All Classes</option>' +
+            Array.from(classes).sort().map(c => `<option value="${c}">${c}</option>`).join('');
+        classSelect.value = current;
+    }
+
+    if (subjectSelect) {
+        const current = subjectSelect.value;
+        subjectSelect.innerHTML = '<option value="">All Subjects</option>' +
+            Array.from(subjects).sort().map(s => `<option value="${s}">${s}</option>`).join('');
+        subjectSelect.value = current;
+    }
+}
+
+function renderEnrollmentsTable() {
+        const tbody = document.getElementById('enrollments-table-body');
+    if (!tbody) return;
+
+    const { board, class: classFilter, subject } = enrollmentFilters;
+
+    // Filter regular enrollments
+    const filteredRegular = allEnrollments.filter(enrollment => {
+        if (board && (enrollment.student?.board || '') !== board) return false;
+        if (classFilter && (enrollment.course?.class || '') !== classFilter) return false;
+        if (subject) {
+            const subjectsArr = Array.isArray(enrollment.subjects) ? enrollment.subjects : [];
+            if (!subjectsArr.includes(subject)) return false;
+        }
+        return true;
+    });
+
+    // Filter marketing enrollments
+    const filteredMarketing = allMarketingEnrollments.filter(enrollment => {
+        if (board && (enrollment.board || '') !== board) return false;
+        if (classFilter && (enrollment.class || '') !== classFilter) return false;
+        if (subject) {
+            const subjectsArr = Array.isArray(enrollment.subjects) ? enrollment.subjects : [];
+            if (!subjectsArr.some(s => s.subject === subject)) return false;
+        }
+        return true;
+    });
+
+    let html = filteredRegular.map(enrollment => `
+            <tr>
+            <td class="px-4 py-3 whitespace-nowrap border-r border-gray-200">${enrollment.student?.name || 'N/A'}</td>
+            <td class="px-4 py-3 whitespace-nowrap border-r border-gray-200">${enrollment.student?.email || 'N/A'}</td>
+            <td class="px-4 py-3 whitespace-nowrap border-r border-gray-200">${enrollment.student?.phone || 'N/A'}</td>
+            <td class="px-4 py-3 whitespace-nowrap border-r border-gray-200">${enrollment.student?.board || 'N/A'}</td>
+            <td class="px-4 py-3 whitespace-nowrap border-r border-gray-200">${enrollment.course?.class || 'N/A'}</td>
+            <td class="px-4 py-3 border-r border-gray-200">${Array.isArray(enrollment.subjects) ? enrollment.subjects.join(', ') : 'N/A'}</td>
+            <td class="px-4 py-3 whitespace-nowrap border-r border-gray-200">₹${enrollment.amount || 0}</td>
+            <td class="px-4 py-3 whitespace-nowrap border-r border-gray-200">
+                    <span class="px-3 py-1 rounded-full text-xs ${getStatusColor(enrollment.status || 'pending')}">${enrollment.status || 'pending'}</span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <span class="px-3 py-1 rounded-full text-xs ${getPaymentStatusColor(enrollment.paymentStatus || 'pending')}">${enrollment.paymentStatus || 'pending'}</span>
+                </td>
+            </tr>
+        `).join('');
+
+    html += filteredMarketing.map(enrollment => `
+            <tr class="bg-yellow-50">
+            <td class="px-4 py-3 whitespace-nowrap border-r border-gray-200">
+                        <span class="font-semibold">${enrollment.studentName}</span>
+                </td>
+            <td class="px-4 py-3 whitespace-nowrap border-r border-gray-200">${enrollment.email || 'N/A'}</td>
+            <td class="px-4 py-3 whitespace-nowrap border-r border-gray-200">${enrollment.phone || 'N/A'}</td>
+            <td class="px-4 py-3 whitespace-nowrap border-r border-gray-200">${enrollment.board || 'N/A'}</td>
+            <td class="px-4 py-3 whitespace-nowrap border-r border-gray-200">${enrollment.class || 'N/A'}</td>
+            <td class="px-4 py-3 border-r border-gray-200">${enrollment.subjects.map(s => s.subject).join(', ')}</td>
+            <td class="px-4 py-3 whitespace-nowrap border-r border-gray-200">₹${enrollment.totalAmount || 0}</td>
+            <td class="px-4 py-3 whitespace-nowrap border-r border-gray-200">
+                    <span class="px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">Pending</span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <span class="px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">Pending</span>
+                </td>
+            </tr>
+        `).join('');
+
+    tbody.innerHTML = html || '<tr><td colspan="9" class="px-4 py-3 text-center text-gray-500">No enrollments found</td></tr>';
 }
 
 function viewEnrollment(id) {
@@ -512,23 +1457,66 @@ async function loadLiveClasses() {
         if (!response.ok) throw new Error('Failed to load live classes');
 
         const result = await response.json();
-        const grid = document.getElementById('live-classes-grid');
+        const tbody = document.getElementById('live-classes-table-body');
         
-        grid.innerHTML = result.data.map(liveClass => `
-            <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition">
-                <h3 class="text-xl font-bold mb-2">${liveClass.title}</h3>
-                <p class="text-gray-600 mb-2">${liveClass.subject}</p>
-                <p class="text-sm text-gray-500 mb-2">${new Date(liveClass.scheduledDate).toLocaleString()}</p>
-                <p class="text-sm mb-4">
-                    <span class="px-3 py-1 rounded-full text-xs ${getStatusColor(liveClass.status)}">${liveClass.status}</span>
-                </p>
-                <div class="flex space-x-2">
-                    <button onclick="viewLiveClass('${liveClass._id}')" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                        View
-                    </button>
-                </div>
-            </div>
-        `).join('');
+        if (!tbody) {
+            hideLoading();
+            return;
+        }
+
+        if (result.data.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="px-6 py-6 text-center text-gray-500">
+                        <div class="flex flex-col items-center space-y-2">
+                            <i class="fas fa-video text-3xl text-gray-300"></i>
+                            <p>No live classes found</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        } else {
+            tbody.innerHTML = result.data.map(liveClass => {
+                const daysText = Array.isArray(liveClass.days) && liveClass.days.length > 0 ? liveClass.days.join(', ') : 'N/A';
+                const timeSlot = liveClass.timeSlot || 'N/A';
+                const startDate = liveClass.scheduledDate 
+                    ? new Date(liveClass.scheduledDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                    : 'N/A';
+                const priceDisplay = liveClass.discountPrice && liveClass.discountPrice > 0 && liveClass.discountPrice < liveClass.price
+                    ? `<span class="text-purple-600 font-semibold">₹${liveClass.discountPrice.toLocaleString()}</span><span class="text-gray-500 line-through ml-1 text-xs">₹${liveClass.price.toLocaleString()}</span>`
+                    : `<span class="text-purple-600 font-semibold">₹${(liveClass.price || 0).toLocaleString()}</span>`;
+
+                return `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">${liveClass.subject || 'N/A'}</div>
+                            ${liveClass.totalDurationText ? `<div class="text-xs text-gray-500">${liveClass.totalDurationText}</div>` : ''}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${liveClass.board || 'N/A'}</div>
+                            <div class="text-xs text-gray-500">Class ${liveClass.className || 'N/A'}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${timeSlot}</div>
+                            <div class="text-xs text-gray-500">${daysText}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${startDate}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">${priceDisplay}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-3 py-1 rounded-full text-xs ${getStatusColor(liveClass.status)}">${liveClass.status}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button onclick="editLiveClass('${liveClass._id}')" class="text-yellow-600 hover:text-yellow-800 mr-3" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteLiveClass('${liveClass._id}')" class="text-red-600 hover:text-red-800" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
 
         hideLoading();
     } catch (error) {
@@ -538,8 +1526,296 @@ async function loadLiveClasses() {
     }
 }
 
-function showAddLiveClassModal() {
-    alert('Add live class feature - implement modal form');
+async function showAddLiveClassModal() {
+    const modal = document.getElementById('addLiveClassModal');
+    const form = document.getElementById('addLiveClassForm');
+    const status = document.getElementById('liveClassFormStatus');
+
+    if (!modal || !form) {
+        console.error('Live class modal or form not found');
+        return;
+    }
+
+    // Ensure subjects are loaded so the subject dropdown is populated
+    if (!subjectsList.length) {
+        await fetchSubjectsForRoles();
+    }
+
+    populateLiveClassDropdowns();
+
+    modal.classList.remove('hidden');
+    form.reset();
+    if (status) status.classList.add('hidden');
+}
+
+function closeAddLiveClassModal() {
+    const modal = document.getElementById('addLiveClassModal');
+    const form = document.getElementById('addLiveClassForm');
+    const status = document.getElementById('liveClassFormStatus');
+
+    if (modal) {
+        // Reset edit mode
+        delete modal.dataset.editId;
+        const modalTitle = modal.querySelector('h3');
+        const submitButton = form ? form.querySelector('button[type="submit"]') : null;
+        if (modalTitle) {
+            modalTitle.innerHTML = '<i class="fas fa-video mr-2 text-red-600"></i>Add Live Class';
+        }
+        if (submitButton) {
+            submitButton.innerHTML = '<i class="fas fa-save mr-2"></i>Create Live Class';
+        }
+        modal.classList.add('hidden');
+    }
+    if (form) form.reset();
+    if (status) status.classList.add('hidden');
+}
+
+function populateLiveClassDropdowns() {
+    const boardSelect = document.getElementById('liveClassBoard');
+    const classSelect = document.getElementById('liveClassClass');
+    const subjectSelect = document.getElementById('liveClassSubject');
+
+    // Boards from boardsList / base
+    if (boardSelect) {
+        const storedBoards = JSON.parse(localStorage.getItem('adminBoards') || '[]');
+        const baseBoards = ['CBSE', 'ICSE'];
+        const boards = Array.from(new Set([...baseBoards, ...storedBoards]));
+
+        boardSelect.innerHTML = '<option value="">Select Board</option>' +
+            boards.map(b => `<option value="${b}">${b}</option>`).join('');
+    }
+
+    // Classes from classesList / base
+    if (classSelect) {
+        const storedClasses = JSON.parse(localStorage.getItem('adminClasses') || '[]');
+        const baseClasses = ['9th', '10th'];
+        const classes = Array.from(new Set([...baseClasses, ...storedClasses]));
+
+        classSelect.innerHTML = '<option value="">Select Class</option>' +
+            classes.map(c => `<option value="${c}">${c}</option>`).join('');
+    }
+
+    // Subjects from subjectsList
+    if (subjectSelect) {
+        const options = subjectsList.length
+            ? subjectsList.map(s => `<option value="${s.subject}">${s.subject}</option>`).join('')
+            : '';
+        subjectSelect.innerHTML = '<option value="">Select Subject</option>' + options;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const addLiveClassForm = document.getElementById('addLiveClassForm');
+    const liveClassModal = document.getElementById('addLiveClassModal');
+
+    if (liveClassModal) {
+        liveClassModal.addEventListener('click', function(e) {
+            if (e.target === liveClassModal) {
+                closeAddLiveClassModal();
+            }
+        });
+    }
+
+    if (addLiveClassForm) {
+        addLiveClassForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const statusDiv = document.getElementById('liveClassFormStatus');
+            if (statusDiv) statusDiv.classList.add('hidden');
+
+            const modal = document.getElementById('addLiveClassModal');
+            const isEditMode = modal && modal.dataset.editId;
+            const editId = isEditMode || null;
+
+            const board = document.getElementById('liveClassBoard')?.value || '';
+            const className = document.getElementById('liveClassClass')?.value || '';
+            const subject = document.getElementById('liveClassSubject')?.value || '';
+            const priceValue = parseFloat(document.getElementById('liveClassPrice')?.value || '0');
+            const discountValue = parseFloat(document.getElementById('liveClassDiscountPrice')?.value || '0');
+            const timeSlot = document.getElementById('liveClassTimeSlot')?.value || '';
+            const startDateStr = document.getElementById('liveClassStartDate')?.value || '';
+            const totalDaysInput = document.getElementById('liveClassTotalDays');
+            const totalDaysText = totalDaysInput ? totalDaysInput.value.trim() : '';
+
+            const dayCheckboxes = Array.from(document.querySelectorAll('#liveClassDays input[type="checkbox"]'));
+            const days = dayCheckboxes.filter(cb => cb.checked).map(cb => cb.value);
+
+            // Validation
+            if (!board || !className || !subject || !timeSlot || !startDateStr || isNaN(priceValue) || priceValue < 0) {
+                showLiveClassFormStatus('Please fill all required fields and enter a valid price.', 'error');
+                return;
+            }
+            if (!days.length) {
+                showLiveClassFormStatus('Please select at least one day.', 'error');
+                return;
+            }
+
+            // Build scheduledDate and duration (minutes) from timeSlot
+            const [startStr, endStr] = timeSlot.split('-'); // e.g. "16:00-17:30"
+            const scheduledDate = new Date(startDateStr + 'T' + startStr + ':00');
+            const [startH, startM] = startStr.split(':').map(Number);
+            const [endH, endM] = endStr.split(':').map(Number);
+            const durationMinutes = (endH * 60 + endM) - (startH * 60 + startM);
+
+            const liveClassData = {
+                title: `${subject} - Class ${className} (${board})`,
+                course: null, // optional, can be wired later to a Course
+                board,
+                className,
+                subject,
+                teacher: currentUser?._id, // current admin/teacher; adjust if needed
+                scheduledDate,
+                duration: durationMinutes,
+                description: totalDaysText ? `Total duration: ${totalDaysText}` : '',
+                timeSlot,
+                status: 'scheduled',
+                price: priceValue,
+                discountPrice: isNaN(discountValue) || discountValue <= 0 ? undefined : discountValue,
+                totalDurationText: totalDaysText || undefined,
+                days
+            };
+
+            try {
+                showLoading();
+                const url = editId 
+                    ? `${API_BASE_URL}/live-classes/${editId}`
+                    : `${API_BASE_URL}/live-classes`;
+                const method = editId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(liveClassData)
+                });
+
+                const result = await response.json();
+                hideLoading();
+
+                if (!response.ok) {
+                    throw new Error(result.message || `Failed to ${editId ? 'update' : 'create'} live class`);
+                }
+
+                showLiveClassFormStatus(`Live class ${editId ? 'updated' : 'created'} successfully!`, 'success');
+                setTimeout(() => {
+                    closeAddLiveClassModal();
+                    loadLiveClasses();
+                }, 1000);
+            } catch (error) {
+                hideLoading();
+                showLiveClassFormStatus(error.message || `Failed to ${editId ? 'update' : 'create'} live class`, 'error');
+            }
+        });
+    }
+});
+
+function showLiveClassFormStatus(message, type) {
+    const statusDiv = document.getElementById('liveClassFormStatus');
+    if (!statusDiv) return;
+    statusDiv.className = `p-4 rounded-lg ${type === 'error' ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-green-100 text-green-700 border border-green-200'}`;
+    statusDiv.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'} mr-2"></i>${message}`;
+    statusDiv.classList.remove('hidden');
+}
+
+async function editLiveClass(id) {
+    try {
+        showLoading();
+        const response = await fetch(`${API_BASE_URL}/live-classes/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+
+        if (!response.ok) throw new Error('Failed to load live class');
+
+        const result = await response.json();
+        const liveClass = result.data;
+        hideLoading();
+
+        // Populate the form with existing data
+        document.getElementById('liveClassBoard').value = liveClass.board || '';
+        document.getElementById('liveClassClass').value = liveClass.className || '';
+        document.getElementById('liveClassSubject').value = liveClass.subject || '';
+        document.getElementById('liveClassPrice').value = liveClass.price || '';
+        document.getElementById('liveClassDiscountPrice').value = liveClass.discountPrice || '';
+        document.getElementById('liveClassTimeSlot').value = liveClass.timeSlot || '';
+        
+        // Format date for input (YYYY-MM-DD)
+        if (liveClass.scheduledDate) {
+            const date = new Date(liveClass.scheduledDate);
+            const formattedDate = date.toISOString().split('T')[0];
+            document.getElementById('liveClassStartDate').value = formattedDate;
+        }
+        
+        // Set total days if exists - extract from totalDurationText or description
+        const totalDaysInput = document.getElementById('liveClassTotalDays');
+        if (totalDaysInput) {
+            let totalDaysValue = liveClass.totalDurationText || '';
+            if (!totalDaysValue && liveClass.description && liveClass.description.includes('Total duration:')) {
+                totalDaysValue = liveClass.description.replace('Total duration:', '').trim();
+            }
+            totalDaysInput.value = totalDaysValue;
+        }
+
+        // Set days checkboxes
+        const dayCheckboxes = document.querySelectorAll('#liveClassDays input[type="checkbox"]');
+        dayCheckboxes.forEach(cb => {
+            cb.checked = liveClass.days && liveClass.days.includes(cb.value);
+        });
+
+        // Change modal title and form action
+        const modal = document.getElementById('addLiveClassModal');
+        const modalTitle = modal.querySelector('h3');
+        const submitButton = document.getElementById('addLiveClassForm').querySelector('button[type="submit"]');
+        
+        modalTitle.innerHTML = '<i class="fas fa-edit mr-2 text-red-600"></i>Edit Live Class';
+        submitButton.innerHTML = '<i class="fas fa-save mr-2"></i>Update Live Class';
+        
+        // Store the ID for update
+        modal.dataset.editId = id;
+
+        // Populate dropdowns
+        await populateLiveClassDropdowns();
+        
+        // Show modal
+        modal.classList.remove('hidden');
+    } catch (error) {
+        hideLoading();
+        console.error('Error loading live class:', error);
+        alert('Failed to load live class for editing');
+    }
+}
+
+async function deleteLiveClass(id) {
+    if (!confirm('Are you sure you want to delete this live class? This action cannot be undone.')) {
+        return;
+    }
+
+    try {
+        showLoading();
+        const response = await fetch(`${API_BASE_URL}/live-classes/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+
+        const result = await response.json();
+        hideLoading();
+
+        if (!response.ok) {
+            throw new Error(result.message || 'Failed to delete live class');
+        }
+
+        alert('Live class deleted successfully!');
+        loadLiveClasses();
+    } catch (error) {
+        hideLoading();
+        console.error('Error deleting live class:', error);
+        alert('Failed to delete live class: ' + error.message);
+    }
 }
 
 function viewLiveClass(id) {

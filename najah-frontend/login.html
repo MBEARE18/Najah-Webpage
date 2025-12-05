@@ -40,10 +40,27 @@
             from { opacity: 0; transform: translateY(-5px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        .blur-background {
+            filter: blur(8px);
+            opacity: 0.3;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+        .modal-overlay {
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-content {
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body class="flex items-center justify-center p-4">
-    <div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div id="mainContent" class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 transition-all duration-300">
         <div class="text-white flex flex-col justify-center">
             <img src="https://najahtutors.net/logo.png" alt="Najah Tutors" class="h-16 w-auto mb-6">
             <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-6">Welcome back, Champion!</h1>
@@ -55,7 +72,7 @@
             </ul>
         </div>
 
-        <div class="glass-card p-8">
+        <div id="loginCard" class="glass-card p-8 transition-all duration-300">
             <div class="text-center mb-8">
                 <h2 class="text-3xl font-bold text-gray-800">Student Login</h2>
                 <p class="text-gray-500 mt-2">Enter the email & password sent to you via email.</p>
@@ -106,39 +123,58 @@
     </div>
 
     <!-- Forgot Password / OTP Modal -->
-    <div id="forgotSection" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-800 flex items-center space-x-2">
-                    <i class="fas fa-key text-purple-600"></i>
-                    <span>Reset your password</span>
-                </h3>
-                <button id="closeForgot" class="text-gray-400 hover:text-gray-600">
+    <div id="forgotSection" class="fixed inset-0 modal-overlay bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="modal-content bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 mx-4 border border-gray-100">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center">
+                        <i class="fas fa-key text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800">Reset Password</h3>
+                        <p class="text-xs text-gray-500">Enter your email to receive OTP</p>
+                    </div>
+                </div>
+                <button id="closeForgot" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="space-y-3">
+            
+            <div class="space-y-4">
                 <div>
-                    <label class="block text-gray-700 text-sm mb-1">Registered Email</label>
-                    <input type="email" id="fpEmail" class="input-field w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-500" placeholder="you@example.com" />
+                    <label class="block text-gray-700 font-semibold text-sm mb-2">Registered Email</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-4 flex items-center text-gray-400"><i class="fas fa-envelope"></i></span>
+                        <input type="email" id="fpEmail" class="input-field w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200" placeholder="you@example.com" />
+                    </div>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <button type="button" id="sendOtpBtn" class="px-4 py-2 rounded-xl bg-purple-600 text-white text-sm font-semibold hover:bg-purple-700">
-                        Send OTP
+                
+                <div>
+                    <button type="button" id="sendOtpBtn" class="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold hover:from-purple-700 hover:to-indigo-700 transition shadow-lg hover:shadow-xl">
+                        <i class="fas fa-paper-plane mr-2"></i>Send OTP
                     </button>
-                    <span id="forgotStatus" class="text-xs text-gray-600"></span>
+                    <p id="forgotStatus" class="text-xs mt-2 text-center"></p>
                 </div>
-                <div id="otpFields" class="space-y-3 hidden">
-                    <div>
-                        <label class="block text-gray-700 text-sm mb-1">Enter OTP</label>
-                        <input type="text" id="fpOtp" maxlength="6" class="input-field w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-500" placeholder="6-digit code" />
+                
+                <div id="otpFields" class="space-y-4 hidden">
+                    <div class="border-t pt-4">
+                        <label class="block text-gray-700 font-semibold text-sm mb-2">Enter 6-Digit OTP</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-4 flex items-center text-gray-400"><i class="fas fa-shield-alt"></i></span>
+                            <input type="text" id="fpOtp" maxlength="6" class="input-field w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 text-center text-2xl tracking-widest font-bold" placeholder="000000" />
+                        </div>
                     </div>
+                    
                     <div>
-                        <label class="block text-gray-700 text-sm mb-1">New Password</label>
-                        <input type="password" id="fpNewPassword" class="input-field w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-500" placeholder="Enter new password" />
+                        <label class="block text-gray-700 font-semibold text-sm mb-2">New Password</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-4 flex items-center text-gray-400"><i class="fas fa-lock"></i></span>
+                            <input type="password" id="fpNewPassword" class="input-field w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200" placeholder="Enter new password" />
+                        </div>
                     </div>
-                    <button type="button" id="resetPasswordBtn" class="w-full px-4 py-2 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700">
-                        Change Password
+                    
+                    <button type="button" id="resetPasswordBtn" class="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold hover:from-green-600 hover:to-emerald-700 transition shadow-lg hover:shadow-xl">
+                        <i class="fas fa-check-circle mr-2"></i>Change Password
                     </button>
                 </div>
             </div>
@@ -228,6 +264,8 @@
         if (forgotPasswordLink && forgotSection) {
             forgotPasswordLink.addEventListener('click', () => {
                 forgotSection.classList.remove('hidden');
+                // Blur the main content
+                document.getElementById('mainContent').classList.add('blur-background');
                 // Pre-fill email if already typed
                 fpEmail.value = document.getElementById('email').value;
                 forgotStatus.textContent = '';
@@ -240,8 +278,18 @@
         if (closeForgot) {
             closeForgot.addEventListener('click', () => {
                 forgotSection.classList.add('hidden');
+                // Remove blur from main content
+                document.getElementById('mainContent').classList.remove('blur-background');
             });
         }
+
+        // Close modal when clicking outside
+        forgotSection.addEventListener('click', (e) => {
+            if (e.target === forgotSection) {
+                forgotSection.classList.add('hidden');
+                document.getElementById('mainContent').classList.remove('blur-background');
+            }
+        });
 
         if (sendOtpBtn) {
             sendOtpBtn.addEventListener('click', async () => {
@@ -317,6 +365,7 @@
                     } else {
                         // Hide the popup and show a simple success message
                         forgotSection.classList.add('hidden');
+                        document.getElementById('mainContent').classList.remove('blur-background');
                         alert('Password reset successful. You can now log in with your new password.');
                     }
                 } catch (err) {

@@ -56,6 +56,14 @@ exports.createMarketingEnrollment = async (req, res) => {
     // If user doesn't exist, create one with random password
     if (!user) {
       generatedPassword = generateRandomPassword();
+      // Normalize subjects to ensure all fields are set
+      const normalizedSubjects = subjects.map(s => ({
+        subject: s.subject,
+        class: s.class || studentClass,
+        board: s.board || board.toUpperCase(),
+        price: s.price || 0
+      }));
+      
       user = await User.create({
         name: studentName,
         email: email.toLowerCase(),
@@ -65,11 +73,37 @@ exports.createMarketingEnrollment = async (req, res) => {
         class: studentClass,
         board: board.toUpperCase(),
         schoolName,
+        subjects: normalizedSubjects, // Save normalized subjects to user
         isActive: true
       });
-      console.log(`User created for ${email}`);
+      console.log(`User created for ${email} with ${normalizedSubjects.length} subjects`);
     } else {
-      console.log(`User already exists for ${email}`);
+      // User exists - update their subjects (merge with existing, avoid duplicates)
+      const existingSubjects = user.subjects || [];
+      const existingSubjectKeys = new Set(
+        existingSubjects.map(s => `${s.subject}-${s.class || ''}-${s.board || ''}`)
+      );
+      
+      // Normalize and add new subjects that don't already exist
+      const newSubjects = subjects
+        .map(s => ({
+          subject: s.subject,
+          class: s.class || studentClass,
+          board: s.board || board.toUpperCase(),
+          price: s.price || 0
+        }))
+        .filter(s => {
+          const key = `${s.subject}-${s.class}-${s.board}`;
+          return !existingSubjectKeys.has(key);
+        });
+      
+      if (newSubjects.length > 0) {
+        user.subjects = [...existingSubjects, ...newSubjects];
+        await user.save();
+        console.log(`Updated user ${email} with ${newSubjects.length} new subjects`);
+      } else {
+        console.log(`User ${email} already has all these subjects`);
+      }
     }
 
     // Create marketing enrollment
